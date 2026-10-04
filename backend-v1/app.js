@@ -13,7 +13,7 @@ import { errorMiddleware } from "./middleware/errorMiddleware.js";
 
 const app = express();
 app.use(cors({
-  origin: true,
+  origin: "https://fin-sight-ten-zeta.vercel.app",
   credentials: true
 }));
 // Parse JSON request bodies
