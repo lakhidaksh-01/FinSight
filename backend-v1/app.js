@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 
 import authRoutes from "./routes/authRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
@@ -8,11 +9,13 @@ import budgetRoutes from "./routes/budgetRoutes.js";
 import goalRoutes from "./routes/goalRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import predictionRoutes from "./routes/predictionRoutes.js";
-
 import { errorMiddleware } from "./middleware/errorMiddleware.js";
 
 const app = express();
-
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 // Parse JSON request bodies
 app.use(express.json());
 
