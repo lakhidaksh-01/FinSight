@@ -1,0 +1,558 @@
+# FINSIGHT — BACKEND API REFERENCE
+
+Base URL:
+http://localhost:5000/api
+
+Authentication:
+Protected endpoints require:
+Authorization: Bearer JWT_TOKEN
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. AUTHENTICATION
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+POST /auth/register
+Auth: No
+
+Request:
+{
+"name": "Daksh Lakhi",
+"email": "[daksh@example.com](mailto:daksh@example.com)",
+"password": "Password123"
+}
+
+Purpose:
+Register a new user.
+
+POST /auth/login
+Auth: No
+
+Request:
+{
+"email": "[daksh@example.com](mailto:daksh@example.com)",
+"password": "Password123"
+}
+
+Purpose:
+Login user and receive JWT token.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. PROFILE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GET /profile
+Auth: Yes
+
+Purpose:
+Get current user's profile.
+
+PUT /profile
+Auth: Yes
+
+Request:
+{
+"name": "Daksh Lakhi",
+"currency": "INR",
+"preferences": {
+"theme": "dark"
+}
+}
+
+Purpose:
+Update user profile/settings.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. EXPENSES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+POST /expenses
+Auth: Yes
+
+Request:
+{
+"amount": 850,
+"category": "Food",
+"description": "Dinner",
+"date": "2026-09-29"
+}
+
+Purpose:
+Create an expense.
+
+GET /expenses
+Auth: Yes
+
+Purpose:
+Get all user's expenses.
+
+GET /expenses/:id
+Auth: Yes
+
+Purpose:
+Get one expense.
+
+PUT /expenses/:id
+Auth: Yes
+
+Request:
+{
+"amount": 900,
+"category": "Food",
+"description": "Dinner + dessert",
+"date": "2026-09-29"
+}
+
+Purpose:
+Update an expense.
+
+DELETE /expenses/:id
+Auth: Yes
+
+Purpose:
+Delete one expense.
+
+DELETE /expenses
+Auth: Yes
+
+Purpose:
+Delete all user's expenses.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. INCOME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+POST /income
+Auth: Yes
+
+Request:
+{
+"amount": 50000,
+"category": "Salary",
+"description": "September Salary",
+"date": "2026-09-01"
+}
+
+Purpose:
+Create an income record.
+
+GET /income
+Auth: Yes
+
+Purpose:
+Get all user's income records.
+
+GET /income/:id
+Auth: Yes
+
+Purpose:
+Get one income record.
+
+PUT /income/:id
+Auth: Yes
+
+Request:
+{
+"amount": 52000,
+"category": "Salary",
+"description": "September Salary",
+"date": "2026-09-01"
+}
+
+Purpose:
+Update an income record.
+
+DELETE /income/:id
+Auth: Yes
+
+Purpose:
+Delete an income record.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. BUDGETS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+POST /budgets
+Auth: Yes
+
+Request:
+{
+"category": "Food",
+"amount": 10000,
+"month": 9,
+"year": 2026
+}
+
+Purpose:
+Create a monthly category budget.
+
+GET /budgets
+Auth: Yes
+
+Purpose:
+Get all user's budgets.
+
+GET /budgets/:id
+Auth: Yes
+
+Purpose:
+Get one budget.
+
+PUT /budgets/:id
+Auth: Yes
+
+Request:
+{
+"category": "Food",
+"amount": 12000,
+"month": 9,
+"year": 2026
+}
+
+Purpose:
+Update a budget.
+
+DELETE /budgets/:id
+Auth: Yes
+
+Purpose:
+Delete a budget.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. GOALS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+POST /goals
+Auth: Yes
+
+Request:
+{
+"name": "New Laptop",
+"targetAmount": 100000,
+"currentAmount": 35000,
+"targetDate": "2027-06-30",
+"description": "Save for a new laptop"
+}
+
+Purpose:
+Create a financial savings goal.
+
+GET /goals
+Auth: Yes
+
+Purpose:
+Get all user's goals.
+
+GET /goals/:id
+Auth: Yes
+
+Purpose:
+Get one goal.
+
+PUT /goals/:id
+Auth: Yes
+
+Request:
+{
+"name": "New Laptop",
+"targetAmount": 100000,
+"currentAmount": 50000,
+"targetDate": "2027-06-30",
+"description": "Updated savings target"
+}
+
+Purpose:
+Update a goal.
+
+DELETE /goals/:id
+Auth: Yes
+
+Purpose:
+Delete a goal.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. ANALYTICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GET /analytics/dashboard
+Auth: Yes
+
+Purpose:
+Get overall financial dashboard statistics.
+
+Provides data such as:
+
+* Total income
+* Total expenses
+* Balance
+* Savings rate
+
+GET /analytics/spending
+Auth: Yes
+
+Purpose:
+Get spending breakdown by category.
+
+Example categories:
+
+* Food
+* Transport
+* Shopping
+* Entertainment
+* Bills
+
+GET /analytics/savings
+Auth: Yes
+
+Purpose:
+Get savings statistics.
+
+Provides:
+
+* Total income
+* Total expenses
+* Total savings
+* Savings rate
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. PREDICTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+POST /predictions
+Auth: Yes
+
+Request:
+{
+"predictionType": "expense_forecast",
+"predictedAmount": 30000,
+"period": "October 2026",
+"confidence": 0.82,
+"model": "linear_regression"
+}
+
+Purpose:
+Create/store a financial prediction.
+
+GET /predictions
+Auth: Yes
+
+Purpose:
+Get prediction history.
+
+GET /predictions/latest
+Auth: Yes
+
+Purpose:
+Get the latest prediction.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOTAL ENDPOINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AUTH
+POST   /auth/register
+POST   /auth/login
+
+PROFILE
+GET    /profile
+PUT    /profile
+
+EXPENSES
+POST   /expenses
+GET    /expenses
+GET    /expenses/:id
+PUT    /expenses/:id
+DELETE /expenses/:id
+DELETE /expenses
+
+INCOME
+POST   /income
+GET    /income
+GET    /income/:id
+PUT    /income/:id
+DELETE /income/:id
+
+BUDGETS
+POST   /budgets
+GET    /budgets
+GET    /budgets/:id
+PUT    /budgets/:id
+DELETE /budgets/:id
+
+GOALS
+POST   /goals
+GET    /goals
+GET    /goals/:id
+PUT    /goals/:id
+DELETE /goals/:id
+
+ANALYTICS
+GET    /analytics/dashboard
+GET    /analytics/spending
+GET    /analytics/savings
+
+PREDICTIONS
+POST   /predictions
+GET    /predictions
+GET    /predictions/latest
+
+TOTAL:
+33 FRONTEND-FACING ENDPOINTS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FRONTEND PAGES THESE APIs SUPPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Login / Register
+   → Authentication
+
+2. Dashboard
+   → Profile
+   → Dashboard Analytics
+   → Spending Analytics
+   → Savings Analytics
+   → Latest Prediction
+   → Recent Expenses/Income
+
+3. Expenses
+   → Full Expense CRUD
+
+4. Income
+   → Full Income CRUD
+
+5. Budgets
+   → Full Budget CRUD
+
+6. Goals
+   → Full Goal CRUD
+
+7. Analytics
+   → Dashboard
+   → Spending
+   → Savings
+   → Charts and financial trends
+
+8. Predictions
+   → Create Prediction
+   → Prediction History
+   → Latest Prediction
+
+9. Profile / Settings
+   → Get Profile
+   → Update Profile
+   → Currency
+   → Preferences
+
+IMPORTANT:
+riskService.js exists in the backend but currently has no public API endpoint.
+No frontend should call riskService directly.
+
+Current backend test status:
+8 test suites passed
+32 tests passed
+0 tests failed
+
+
+
+
+also
+
+
+1. Forgot Password — Send OTP
+POST /api/auth/forgot-password
+
+Request:
+
+{
+  "email": "user@gmail.com"
+}
+
+What happens:
+
+Backend checks whether the email exists.
+Generates a 6-digit OTP.
+Hashes the OTP and stores it.
+OTP expires after 90 seconds.
+Sends the OTP to the user's registered email.
+
+Example response:
+
+{
+  "success": true,
+  "message": "If an account with that email exists, an OTP has been sent."
+}
+2. Verify OTP
+POST /api/auth/verify-otp
+
+Request:
+
+{
+  "email": "user@gmail.com",
+  "otp": "482913"
+}
+
+Backend checks:
+
+Is the OTP correct?
+Has 90 seconds passed?
+Has this OTP already been used?
+
+If correct:
+
+{
+  "success": true,
+  "message": "OTP verified successfully",
+  "data": {
+    "resetToken": "..."
+  }
+}
+
+The frontend keeps that resetToken temporarily.
+
+3. Reset Password
+POST /api/auth/reset-password
+
+Request:
+
+{
+  "email": "user@gmail.com",
+  "resetToken": "token-from-previous-api",
+  "newPassword": "newpassword123"
+}
+
+Backend:
+
+Checks the reset token.
+Checks that the reset session hasn't expired.
+Hashes the new password.
+Updates the user's password.
+Deletes the password-reset record.
+
+Response:
+
+{
+  "success": true,
+  "message": "Password reset successfully"
+}
+Complete frontend flow
+Forgot Password page
+        ↓
+Enter email
+        ↓
+POST /api/auth/forgot-password
+        ↓
+OTP arrives in user's email
+        ↓
+Enter 6-digit OTP
+        ↓
+POST /api/auth/verify-otp
+        ↓
+Receive resetToken
+        ↓
+Enter new password
+        ↓
+POST /api/auth/reset-password
+        ↓
+Password changed ✅
+        ↓
+Login with new password

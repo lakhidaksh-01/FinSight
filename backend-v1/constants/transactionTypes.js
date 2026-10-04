@@ -1,0 +1,9 @@
+export const TRANSACTION_TYPES = {
+  INCOME: "income",
+  EXPENSE: "expense"
+};
+
+export const TRANSACTION_TYPE_VALUES = [
+  TRANSACTION_TYPES.INCOME,
+  TRANSACTION_TYPES.EXPENSE
+];
