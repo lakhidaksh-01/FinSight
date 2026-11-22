@@ -30,7 +30,7 @@ function Select({
       {label && (
         <label
           htmlFor={name}
-          className="mb-2 block text-sm font-medium text-slate-300"
+          className="mb-2 block text-sm font-medium text-[var(--text-secondary)]"
         >
           {label}
 
@@ -48,16 +48,16 @@ function Select({
           disabled={disabled}
           className={`
             h-11 w-full appearance-none rounded-xl border
-            bg-slate-900
+            bg-[var(--surface-raised)]
             px-4 pr-10
-            text-sm text-white
+            text-sm text-[var(--text-primary)]
             outline-none
             transition-all duration-200
             disabled:cursor-not-allowed disabled:opacity-50
             ${
               error
                 ? "border-red-500/40 focus:border-red-400"
-                : "border-white/[0.08] focus:border-white/20"
+                : "border-[var(--border-subtle)] focus:border-[var(--secondary)] focus:ring-2 focus:ring-[var(--secondary)]/10"
             }
             ${className}
           `}

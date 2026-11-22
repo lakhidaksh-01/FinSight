@@ -12,6 +12,7 @@ import { useAnalytics } from "../../hooks/useAnalytics";
 import { useAuth } from "../../hooks/useAuth";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { buildTransactionFeed } from "../../utils/calculations";
+import { motion } from "motion/react";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -22,12 +23,12 @@ export default function Dashboard() {
   return <div className="space-y-6">
     <PageHeader eyebrow="Your finances" title={`Financial overview${user?.name ? `, ${user.name.split(" ")[0]}` : ""}`} description={`A current view of your money · ${periodLabel}`} />
     {error && <ErrorState message={error} onRetry={refresh} />}
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      <MetricCard label="Income" value={formatCurrency(summary.totalIncome)} detail="Selected period" icon={ArrowUpRight} tone="mint" />
-      <MetricCard label="Expenses" value={formatCurrency(summary.totalExpenses)} detail="Selected period" icon={ArrowDownRight} tone="amber" />
-      <MetricCard label="Net savings" value={formatCurrency(summary.savings)} detail={`${summary.savingsRate}% savings rate`} icon={PiggyBank} tone={summary.savings >= 0 ? "blue" : "rose"} />
-      <MetricCard label="Transactions" value={summary.transactionCount.toLocaleString()} detail="Income and expenses" icon={ReceiptText} tone="rose" />
-    </div>
+    <motion.div initial="hidden" animate="show" variants={{hidden:{},show:{transition:{staggerChildren:0.06}}}} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <motion.div variants={{hidden:{opacity:0,y:8},show:{opacity:1,y:0}}}><MetricCard label="Income" value={formatCurrency(summary.totalIncome)} detail="Selected period" icon={ArrowUpRight} tone="mint" /></motion.div>
+      <motion.div variants={{hidden:{opacity:0,y:8},show:{opacity:1,y:0}}}><MetricCard label="Expenses" value={formatCurrency(summary.totalExpenses)} detail="Selected period" icon={ArrowDownRight} tone="amber" /></motion.div>
+      <motion.div variants={{hidden:{opacity:0,y:8},show:{opacity:1,y:0}}}><MetricCard label="Net savings" value={formatCurrency(summary.savings)} detail={`${summary.savingsRate}% savings rate`} icon={PiggyBank} tone={summary.savings >= 0 ? "blue" : "rose"} /></motion.div>
+      <motion.div variants={{hidden:{opacity:0,y:8},show:{opacity:1,y:0}}}><MetricCard label="Transactions" value={summary.transactionCount.toLocaleString()} detail="Income and expenses" icon={ReceiptText} tone="rose" /></motion.div>
+    </motion.div>
     {loading && <p className="text-sm text-[#91a097]">Refreshing your financial overview…</p>}
     <div className="grid gap-4 xl:grid-cols-[1.55fr_0.85fr]">
       <section className="rounded-xl border border-white/[0.08] bg-[#121a16] p-4 sm:p-5">

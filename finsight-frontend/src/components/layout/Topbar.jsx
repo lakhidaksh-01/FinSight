@@ -37,7 +37,7 @@ function Topbar({ onMenuClick }) {
   };
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/[0.07] bg-slate-950/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-[var(--border-subtle)] bg-[var(--surface)]/80 backdrop-blur-xl">
       <div className="flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
 
         {/* Left side */}
@@ -77,7 +77,7 @@ function Topbar({ onMenuClick }) {
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search expenses..."
               aria-label="Search expenses"
-              className="h-11 w-64 rounded-xl border border-white/[0.08] bg-white/[0.03] pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-600 transition-all focus:border-white/20 focus:bg-white/[0.05] lg:w-80"
+              className="h-11 w-64 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] pl-10 pr-4 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)] transition-all focus:border-[var(--secondary)] focus:ring-2 focus:ring-[var(--secondary)]/10 lg:w-80"
             />
           </form>
         </div>

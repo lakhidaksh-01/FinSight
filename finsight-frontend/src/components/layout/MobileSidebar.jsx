@@ -102,7 +102,7 @@ function MobileSidebar({ isOpen, onClose }) {
       />
 
       {/* Drawer */}
-      <aside role="dialog" aria-modal="true" aria-label="Mobile navigation" className="relative flex h-full w-[290px] max-w-[85vw] flex-col border-r border-white/[0.08] bg-slate-950 shadow-2xl">
+      <aside role="dialog" aria-modal="true" aria-label="Mobile navigation" className="relative flex h-full w-[290px] max-w-[85vw] flex-col border-r border-[var(--border-subtle)] bg-[var(--surface)] shadow-[var(--shadow-lg)]">
         {/* Header */}
         <div className="flex h-20 items-center justify-between border-b border-white/[0.07] px-5">
           <div className="flex items-center gap-3">

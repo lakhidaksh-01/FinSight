@@ -156,12 +156,22 @@ export const assessFinancialRisk = ({
   const breachPressure = exceeded >= 2 || overspent > expenseTotal * 0.15;
 
   if (incomeTotal <= 0) {
+    if (expenseTotal > 0) {
+      return {
+        riskLevel: "high",
+        savingsRate: 0,
+        amount: expenseTotal,
+        message:
+          "Expenses are recorded but no income is recorded. Until income is entered, FinSight cannot calculate a sustainable savings position.",
+      };
+    }
+
     return {
-      riskLevel: "medium",
-      savingsRate: Number(rate.toFixed(1)),
+      riskLevel: "low",
+      savingsRate: 0,
       amount: null,
       message:
-        "Income has not been recorded yet, so FinSight cannot measure how much of it you keep. Add income records to sharpen this signal.",
+        "No financial activity has been recorded yet, so there is not enough data to assess risk.",
     };
   }
 
@@ -370,7 +380,7 @@ export const buildInsights = ({
       title: "Approaching budget limits",
       message: `${nearLimit
         .map((budget) => getCategoryLabel(budget.category))
-        .join(", ")} ${nearLimit.length === 1 ? "is" : "are"} above 80% of the monthly limit with days still to go.`,
+        .join(", ")} ${nearLimit.length === 1 ? "is" : "are"} at 80–100% of the monthly limit.`,
       category: "budgets",
       actionLabel: "Review budgets",
     });
@@ -402,7 +412,7 @@ export const buildInsights = ({
   const goalSaved = sumBy(goals, "currentAmount");
 
   if (goalTarget > 0) {
-    const progress = (goalSaved / goalTarget) * 100;
+    const progress = Math.min((goalSaved / goalTarget) * 100, 100);
 
     insights.push({
       id: "goal-progress",
@@ -426,8 +436,8 @@ export const buildInsights = ({
   }
 
   const urgentGoal = (goals || [])
-    .filter((goal) => goal?.targetDate && (Number(goal.currentAmount) || 0) < (Number(goal.targetAmount) || 0))
-    .map((goal) => ({ goal, days: daysUntil(goal.targetDate) }))
+    .filter((goal) => (goal?.targetDate || goal?.deadline) && (Number(goal.currentAmount) || 0) < (Number(goal.targetAmount) || 0))
+    .map((goal) => ({ goal, days: daysUntil(goal.targetDate || goal.deadline) }))
     .filter((entry) => entry.days !== null && entry.days >= 0 && entry.days <= 60)
     .sort((a, b) => a.days - b.days)[0];
 
@@ -495,15 +505,21 @@ export const getQuickInsights = (insights = [], limit = 3) =>
 /*
  * Counts for InsightSummary.
  */
-export const summarizeInsights = (insights = [], anomalies = [], risk = null) => ({
-  totalInsights: insights.length,
-  riskCount:
-    insights.filter((insight) => insight.type === "risk").length +
-    (risk && risk.riskLevel !== "low" ? 1 : 0),
-  anomalyCount:
-    anomalies.length || insights.filter((insight) => insight.category === "anomaly").length,
-  actionableCount: insights.filter((insight) => Boolean(insight.actionLabel)).length,
-});
+export const summarizeInsights = (insights = [], anomalies = [], risk = null) => {
+  const riskSummaryCount =
+    insights.filter((insight) => insight.type === "risk").length;
+  const externalRiskCount =
+    riskSummaryCount === 0 && risk && risk.riskLevel !== "low" ? 1 : 0;
+
+  return {
+    totalInsights: insights.length,
+    riskCount: riskSummaryCount + externalRiskCount,
+    anomalyCount:
+      anomalies.length ||
+      insights.filter((insight) => insight.category === "anomaly").length,
+    actionableCount: insights.filter((insight) => Boolean(insight.actionLabel)).length,
+  };
+};
 
 /*
  * Prediction-derived observation, reused by the insights and prediction pages.

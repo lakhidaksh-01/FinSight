@@ -2,6 +2,7 @@ import { ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, ShieldCheck, Walle
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { ROUTES } from "../constants/app";
+import { motion } from "motion/react";
 
 function Landing() {
   const { user, loading } = useAuth();
@@ -9,7 +10,7 @@ function Landing() {
   if (!loading && user) return <Navigate to={ROUTES.DASHBOARD} replace />;
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#0c1210] text-[#f1f5f2]">
+    <main className="min-h-screen overflow-hidden bg-[var(--canvas)] text-[var(--text-primary)]">
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8">
         <Link to={ROUTES.LANDING} className="flex items-center gap-3 text-lg font-semibold">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#9bd3a9] text-[#112018]"><WalletCards size={19} /></span> FinSight
@@ -21,7 +22,7 @@ function Landing() {
       </header>
 
       <section className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 pb-20 pt-10 sm:px-8 lg:grid-cols-[0.88fr_1.12fr] lg:gap-10 lg:pb-28 lg:pt-14">
-        <div className="relative z-10 max-w-xl animate-[rise_650ms_ease-out_both]">
+        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65 }} className="relative z-10 max-w-xl">
           <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#9bd3a9]/20 bg-[#9bd3a9]/[0.07] px-3 py-1.5 text-xs font-medium text-[#b7dbbd]"><span className="h-1.5 w-1.5 rounded-full bg-[#9bd3a9]" /> A calmer way to manage money</p>
           <h1 className="max-w-[620px] text-[clamp(2.8rem,6vw,5.25rem)] font-semibold leading-[1.02] tracking-[-0.035em]">Your money,<br /><span className="text-[#a5d9ad]">in better focus.</span></h1>
           <p className="mt-6 max-w-lg text-base leading-7 text-[#a6b2aa] sm:text-lg">See where it goes, plan what matters, and make your next financial decision with confidence.</p>
@@ -33,9 +34,9 @@ function Landing() {
             <span className="inline-flex items-center gap-2"><ShieldCheck size={15} className="text-[#9bd3a9]" /> Private to your account</span>
             <span className="inline-flex items-center gap-2"><BarChart3 size={15} className="text-[#9bd3a9]" /> Insights from your activity</span>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="relative mx-auto w-full max-w-[620px] animate-[rise_800ms_120ms_ease-out_both] lg:ml-auto">
+        <motion.div initial={{ opacity: 0, y: 24, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.75, delay: 0.12 }} className="relative mx-auto w-full max-w-[620px] lg:ml-auto">
           <div className="absolute -inset-10 rounded-full bg-[#75ad85]/[0.08] blur-3xl" />
           <div className="relative rotate-[1deg] rounded-[18px] border border-white/10 bg-[#111a16] p-4 shadow-2xl shadow-black/40 sm:p-6">
             <div className="flex items-center justify-between border-b border-white/[0.07] pb-4">
@@ -55,7 +56,7 @@ function Landing() {
               <div className="mt-3 flex gap-4 text-[11px] text-[#89968e]"><span className="inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#83bd91]" /> Income</span><span className="inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#c59e69]" /> Expenses</span></div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
       <section className="border-t border-white/[0.07] bg-[#101713]">
         <div className="mx-auto grid max-w-7xl gap-6 px-5 py-8 sm:grid-cols-3 sm:px-8">

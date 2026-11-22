@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import MobileSidebar from "./MobileSidebar";
+import { motion } from "motion/react";
 
 /*
  * AppLayout
@@ -44,11 +45,16 @@ function AppLayout() {
         <Topbar onMenuClick={openMobileSidebar} />
 
         {/* Page content */}
-        <main className="px-4 pb-8 pt-6 sm:px-6 lg:px-8">
+        <motion.main
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          className="px-4 pb-8 pt-6 sm:px-6 lg:px-8"
+        >
           <div className="mx-auto w-full max-w-[1600px]">
             <Outlet />
           </div>
-        </main>
+        </motion.main>
       </div>
     </div>
   );

@@ -43,17 +43,17 @@ function Input({
 
   const inputClasses = `
     w-full rounded-xl border
-    bg-white/[0.03]
+    bg-[var(--surface-raised)]
     px-4
-    text-sm text-white
+    text-sm text-[var(--text-primary)]
     outline-none
-    placeholder:text-slate-600
+    placeholder:text-[var(--text-muted)]
     transition-all duration-200
     disabled:cursor-not-allowed disabled:opacity-50
     ${
       error
         ? "border-red-500/40 focus:border-red-400"
-        : "border-white/[0.08] focus:border-white/20 focus:bg-white/[0.05]"
+        : "border-[var(--border-subtle)] focus:border-[var(--secondary)] focus:ring-2 focus:ring-[var(--secondary)]/10"
     }
     ${type === "password" ? "pr-12" : ""}
     ${icon ? "pl-10" : ""}
@@ -66,7 +66,7 @@ function Input({
       {label && (
         <label
           htmlFor={name}
-          className="mb-2 block text-sm font-medium text-slate-300"
+          className="mb-2 block text-sm font-medium text-[var(--text-secondary)]"
         >
           {label}
 

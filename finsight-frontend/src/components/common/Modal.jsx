@@ -110,23 +110,23 @@ function Modal({
           max-h-[90vh]
           overflow-hidden
           rounded-2xl
-          border border-white/[0.08]
-          bg-slate-900
-          shadow-2xl shadow-black/40
+          border border-[var(--border-subtle)]
+          bg-[var(--surface-elevated)]
+          shadow-[var(--shadow-lg)]
         `}
       >
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-white/[0.07] px-5 py-4 sm:px-6">
+        <div className="flex items-start justify-between border-b border-[var(--border-subtle)] px-5 py-4 sm:px-6">
           <div className="min-w-0 pr-4">
             <h2
               id="modal-title"
-              className="text-base font-semibold text-white sm:text-lg"
+              className="text-base font-semibold text-[var(--text-primary)] sm:text-lg"
             >
               {title}
             </h2>
 
             {description && (
-              <p className="mt-1 text-sm leading-5 text-slate-500">
+              <p className="mt-1 text-sm leading-5 text-[var(--text-muted)]">
                 {description}
               </p>
             )}

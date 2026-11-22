@@ -22,17 +22,17 @@ function PageHeader({
       {/* Heading content */}
       <div className="min-w-0">
         {eyebrow && (
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
             {eyebrow}
           </p>
         )}
 
-        <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] sm:text-3xl">
           {title}
         </h1>
 
         {description && (
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400 sm:text-[15px]">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-muted)] sm:text-[15px]">
             {description}
           </p>
         )}

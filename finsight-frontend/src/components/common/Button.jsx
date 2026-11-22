@@ -34,15 +34,15 @@ function Button({
 }) {
   const variants = {
     primary:
-      "bg-white text-slate-950 hover:bg-slate-200 shadow-lg shadow-white/[0.04]",
+      "bg-[var(--accent)] text-white hover:bg-[var(--accent-strong)] shadow-[var(--shadow-sm)]",
     secondary:
-      "bg-white/[0.08] text-white hover:bg-white/[0.12] border border-white/[0.08]",
+      "bg-[var(--surface-raised)] text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] border border-[var(--border-subtle)]",
     outline:
-      "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-950",
+      "border border-[var(--border-subtle)] bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)]",
     danger:
       "bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/15",
     ghost:
-      "bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+      "bg-transparent text-[var(--text-muted)] hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)]",
   };
 
   const sizes = {

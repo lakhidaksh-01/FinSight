@@ -455,6 +455,26 @@ export const calculateFinancialHealth = ({
 
   let score = 0;
 
+  if (incomeTotal <= 0 && expenseTotal <= 0 && transactionCount <= 0) {
+    return {
+      score: 0,
+      label: "Getting Started",
+      description: "Add income and expense activity to calculate your financial health.",
+      savings: 0,
+      savingsRate: 0,
+    };
+  }
+
+  if (incomeTotal <= 0 && expenseTotal > 0) {
+    return {
+      score: 0,
+      label: "At Risk",
+      description: "Expenses are recorded without income. Add income records to calculate a meaningful savings position.",
+      savings: -expenseTotal,
+      savingsRate: 0,
+    };
+  }
+
   // Savings behaviour (max 45)
   if (incomeTotal > 0) {
     if (rate >= 30) score += 45;
@@ -484,8 +504,6 @@ export const calculateFinancialHealth = ({
         budgetsWithData.length) *
         30
     );
-  } else {
-    score += 12;
   }
 
   // Goal momentum (max 15)

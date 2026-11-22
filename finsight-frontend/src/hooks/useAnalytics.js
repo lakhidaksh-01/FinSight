@@ -139,9 +139,24 @@ export function useAnalytics({ months: initialMonths } = {}) {
     [data.incomes, range]
   );
 
+  const currentRange = useMemo(() => getRollingRange(1), []);
+  const previousRange = useMemo(() => getRollingRange(1, previousMonthReference()), []);
+
   const budgets = useMemo(
-    () => withBudgetProgress(data.budgets, data.expenses),
-    [data.budgets, data.expenses]
+    () => withBudgetProgress(
+      data.budgets.filter((budget) => {
+        const month = Number(budget.month);
+        const year = Number(budget.year);
+        const current = currentRange.endDate;
+
+        return (
+          year === current.getFullYear() &&
+          month === current.getMonth() + 1
+        );
+      }),
+      data.expenses
+    ),
+    [data.budgets, data.expenses, currentRange]
   );
 
   const totalExpenses = useMemo(() => sumAmount(expenses), [expenses]);
@@ -171,9 +186,6 @@ export function useAnalytics({ months: initialMonths } = {}) {
    * Month-over-month movement, the basis of both the comparison cards and the
    * "spending is climbing" insight.
    */
-  const currentRange = useMemo(() => getRollingRange(1), []);
-  const previousRange = useMemo(() => getRollingRange(1, previousMonthReference()), []);
-
   const currentMonthExpenses = useMemo(
     () => filterByRange(data.expenses, currentRange.startDate, currentRange.endDate),
     [data.expenses, currentRange]
@@ -250,7 +262,13 @@ export function useAnalytics({ months: initialMonths } = {}) {
   const anomalies = useMemo(() => {
     const local = detectExpenseAnomalies(expenses, incomes);
     const serverRecords = data.latestPrediction?.metadata?.anomalies || [];
-    const server = serverRecords.map((record, index) => ({
+    const server = serverRecords
+      .filter((record) => expenses.some((expense) =>
+        expense.date &&
+        String(expense.date).slice(0, 10) === String(record.date || "").slice(0, 10) &&
+        Number(expense.amount) === Number(record.amount)
+      ))
+      .map((record, index) => ({
       id: `server-anomaly-${record.date || index}-${record.amount}`,
       severity: "medium",
       title: record.category ? `${record.category} anomaly` : "Unusual expense",

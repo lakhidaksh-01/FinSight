@@ -92,8 +92,8 @@ function Sidebar() {
           className={({ isActive }) =>
             `group flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium transition-all duration-200 ${
               isActive
-                ? "bg-white/10 text-white shadow-sm ring-1 ring-white/10"
-                : "text-slate-400 hover:bg-white/[0.06] hover:text-white"
+                ? "bg-[var(--accent-soft)] text-[var(--text-primary)] shadow-sm ring-1 ring-[var(--border-subtle)]"
+                : "text-[var(--text-muted)] hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)]"
             }`
           }
         >
@@ -110,7 +110,7 @@ function Sidebar() {
   };
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-white/[0.07] bg-slate-950/95 backdrop-blur-xl lg:flex lg:flex-col">
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-[var(--border-subtle)] bg-[var(--surface)]/95 backdrop-blur-xl lg:flex lg:flex-col">
       {/* Brand */}
       <div className="flex h-20 items-center border-b border-white/[0.07] px-6">
         <NavLink to="/app/dashboard" className="flex items-center gap-3">
