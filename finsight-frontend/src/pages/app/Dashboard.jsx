@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import ErrorState from "../../components/common/ErrorState";
 import MetricCard from "../../components/common/MetricCard";
 import BalanceCard from "../../components/dashboard/BalanceCard";
+import BudgetOverview from "../../components/dashboard/BudgetOverview";
 import FinancialHealthCard from "../../components/dashboard/FinancialHealthCard";
 import QuickActions from "../../components/dashboard/QuickActions";
 import QuickInsights from "../../components/dashboard/QuickInsights";
