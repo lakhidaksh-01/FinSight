@@ -69,8 +69,8 @@ function QuickInsights({ insights = [] }) {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold {style.title}">{insight.title}</p>
-                    <p className="mt-1 text-xs leading-5 {style.body}">{insight.message}</p>
+                    <p className={`text-sm font-semibold ${style.title}`}>{insight.title}</p>
+                    <p className={`mt-1 text-xs leading-5 ${style.body}`}>{insight.message}</p>
                   </div>
                 </div>
               );

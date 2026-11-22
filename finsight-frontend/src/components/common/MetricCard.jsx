@@ -31,7 +31,7 @@ export default function MetricCard({
   return (
     <article className="group relative overflow-hidden rounded-3xl border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)] transition-all duration-200 hover:shadow-[var(--shadow-md)] hover:border-[var(--border-strong)] hover:-translate-y-1 sm:p-6">
       {Icon && (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl mb-3 ${toneStyle.icon}">
+        <div className={`mb-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${toneStyle.icon}`}>
           <Icon size={18} strokeWidth={2} />
         </div>
       )}

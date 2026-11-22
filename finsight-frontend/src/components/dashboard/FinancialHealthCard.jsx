@@ -29,7 +29,7 @@ function FinancialHealthCard({ score = 0, label = "Getting Started", description
           <h3 className="mt-1 text-lg font-bold tracking-tight text-[var(--text-primary)]">{label}</h3>
         </div>
 
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl ${scoreStyle.ring} bg-[color-mix(in_srgb,var(--accent),transparent_92%)]">
+        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${scoreStyle.ring} bg-[color-mix(in_srgb,var(--accent),transparent_92%)]`}>
           <ScoreIcon size={20} strokeWidth={1.8} className="text-[var(--accent)]" />
         </div>
       </div>

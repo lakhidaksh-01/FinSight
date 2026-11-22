@@ -43,7 +43,7 @@ export class ApiError extends Error {
 export const NETWORK_ERROR_MESSAGE =
   "Unable to reach the FinSight service. Check that the API is running.";
 
-const AUTH_PATHS = ["/auth/", "/profile"];
+const AUTH_PATHS = ["/auth/"];
 
 const isAuthRoute = (url = "") =>
   AUTH_PATHS.some((path) => String(url).includes(path));
