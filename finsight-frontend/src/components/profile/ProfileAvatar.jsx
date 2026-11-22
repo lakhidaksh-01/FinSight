@@ -1,12 +1,11 @@
-import { Camera, UserRound } from "lucide-react";
+﻿import { Camera, UserRound } from "lucide-react";
 
-function ProfileAvatar({
-  name = "",
-  imageUrl = "",
-  size = "large",
-  editable = false,
-  onChange,
-}) {
+/*
+ * ProfileAvatar
+ * -------------
+ * User avatar with initials or image.
+ */
+function ProfileAvatar({ name = "", imageUrl = "", size = "large", editable = false, onChange }) {
   const initials = name
     ? name
         .trim()
@@ -21,13 +20,10 @@ function ProfileAvatar({
     medium: "h-14 w-14 text-lg",
     large: "h-24 w-24 text-2xl",
   };
-
-  const avatarSize =
-    sizeClasses[size] || sizeClasses.large;
+  const avatarSize = sizeClasses[size] || sizeClasses.large;
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
-
     if (file) {
       onChange?.(file);
     }
@@ -36,7 +32,7 @@ function ProfileAvatar({
   return (
     <div className="relative inline-block">
       <div
-        className={`flex ${avatarSize} items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 font-bold text-white shadow-lg shadow-purple-200/40`}
+        className={`flex ${avatarSize} items-center justify-center overflow-hidden rounded-full bg-[var(--gradient-primary)] font-bold text-[var(--text-inverse)] shadow-lg shadow-[var(--accent)]/30`}
       >
         {imageUrl ? (
           <img
@@ -52,9 +48,8 @@ function ProfileAvatar({
       </div>
 
       {editable && (
-        <label className="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-slate-900 text-white shadow-md transition-transform hover:scale-105">
+        <label className="absolute bottom-0 right-0 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-[var(--border-strong)] bg-[var(--surface)] text-[var(--text-primary)] shadow-md transition-transform hover:scale-105">
           <Camera size={14} />
-
           <input
             type="file"
             accept="image/*"

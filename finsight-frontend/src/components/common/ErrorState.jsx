@@ -1,4 +1,4 @@
-import { AlertCircle, RefreshCw } from "lucide-react";
+﻿import { AlertCircle, RefreshCw } from "lucide-react";
 import Button from "./Button";
 
 /*
@@ -13,28 +13,22 @@ function ErrorState({
   onRetry,
 }) {
   return (
-    <div role="alert" className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-red-500/10 bg-red-500/[0.03] px-6 py-10 text-center">
-      {/* Error icon */}
-      <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-red-500/15 bg-red-500/[0.08] text-red-400">
-        <AlertCircle size={25} strokeWidth={1.7} />
+    <div role="alert" className="flex min-h-[300px] flex-col items-center justify-center rounded-3xl border border-[var(--danger)]/20 bg-[var(--danger-soft)] px-8 py-12 text-center">
+      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--danger)]/20 bg-[var(--danger)]/10 text-[var(--danger)]">
+        <AlertCircle size={26} strokeWidth={1.7} />
       </div>
 
-      <h3 className="text-base font-semibold text-white">
+      <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">
         {title}
       </h3>
 
-      <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
+      <p className="mt-3 max-w-md text-sm leading-6 text-[var(--text-muted)]">
         {message}
       </p>
 
-      {/* Retry button */}
       {onRetry && (
-        <div className="mt-5">
-          <Button
-            variant="outline"
-            icon={RefreshCw}
-            onClick={onRetry}
-          >
+        <div className="mt-6">
+          <Button variant="outline" icon={RefreshCw} onClick={onRetry}>
             Try Again
           </Button>
         </div>

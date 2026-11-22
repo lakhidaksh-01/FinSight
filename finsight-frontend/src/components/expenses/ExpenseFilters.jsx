@@ -1,4 +1,4 @@
-import { Search, X, SlidersHorizontal } from "lucide-react";
+﻿import { Search, X, SlidersHorizontal } from "lucide-react";
 import Input from "../common/Input";
 import Select from "../common/Select";
 import Button from "../common/Button";
@@ -23,27 +23,12 @@ const SORT_OPTIONS = [
   { value: "lowest", label: "Lowest Amount" },
 ];
 
-function ExpenseFilters({
-  filters,
-  onChange,
-  onReset,
-}) {
-  const safeFilters = {
-    search: "",
-    category: "all",
-    sort: "newest",
-    dateFrom: "",
-    dateTo: "",
-    ...filters,
-  };
+function ExpenseFilters({ filters, onChange, onReset }) {
+  const safeFilters = { search: "", category: "all", sort: "newest", dateFrom: "", dateTo: "", ...filters };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-
-    onChange?.({
-      ...safeFilters,
-      [name]: value,
-    });
+    onChange?.({ ...safeFilters, [name]: value });
   };
 
   const hasActiveFilters =
@@ -54,79 +39,32 @@ function ExpenseFilters({
     safeFilters.dateTo;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      {/* Filter heading */}
+    <div className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)] sm:p-6">
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--info-soft)] text-[var(--info)]">
             <SlidersHorizontal size={17} />
           </div>
-
           <div>
-            <h3 className="font-semibold text-slate-900">Filter Expenses</h3>
-            <p className="text-xs text-slate-500">
-              Find and organize your transactions
-            </p>
+            <h3 className="font-semibold tracking-tight text-[var(--text-primary)]">Filter Expenses</h3>
+            <p className="mt-1 text-xs text-[var(--text-muted)]">Find and organize your transactions</p>
           </div>
         </div>
 
         {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="small"
-            icon={X}
-            onClick={onReset}
-          >
-            Clear
-          </Button>
+          <Button variant="ghost" size="small" icon={X} onClick={onReset}>Clear</Button>
         )}
       </div>
 
-      {/* Search */}
       <div className="mb-5">
-        <Input
-          label="Search"
-          name="search"
-          value={safeFilters.search}
-          onChange={handleChange}
-          placeholder="Search expenses..."
-          icon={<Search size={17} />}
-        />
+        <Input label="Search" name="search" value={safeFilters.search} onChange={handleChange} placeholder="Search expenses…" icon={<Search size={17} />} />
       </div>
 
-      {/* Filters */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Select
-          label="Category"
-          name="category"
-          value={safeFilters.category}
-          onChange={handleChange}
-          options={CATEGORY_OPTIONS}
-        />
-
-        <Select
-          label="Sort By"
-          name="sort"
-          value={safeFilters.sort}
-          onChange={handleChange}
-          options={SORT_OPTIONS}
-        />
-
-        <Input
-          label="From Date"
-          name="dateFrom"
-          type="date"
-          value={safeFilters.dateFrom}
-          onChange={handleChange}
-        />
-
-        <Input
-          label="To Date"
-          name="dateTo"
-          type="date"
-          value={safeFilters.dateTo}
-          onChange={handleChange}
-        />
+        <Select label="Category" name="category" value={safeFilters.category} onChange={handleChange} options={CATEGORY_OPTIONS} />
+        <Select label="Sort By" name="sort" value={safeFilters.sort} onChange={handleChange} options={SORT_OPTIONS} />
+        <Input label="From Date" name="dateFrom" type="date" value={safeFilters.dateFrom} onChange={handleChange} />
+        <Input label="To Date" name="dateTo" type="date" value={safeFilters.dateTo} onChange={handleChange} />
       </div>
     </div>
   );

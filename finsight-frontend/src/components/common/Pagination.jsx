@@ -1,3 +1,8 @@
+﻿/*
+ * Pagination
+ * ----------
+ * Premium pagination controls.
+ */
 function Pagination({ pagination, onPageChange }) {
   if (!pagination || pagination.pages <= 1) {
     return null;
@@ -9,9 +14,9 @@ function Pagination({ pagination, onPageChange }) {
   return (
     <nav
       aria-label="Pagination"
-      className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-[#121a16] px-4 py-3"
+      className="inline-flex items-center justify-between gap-3 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-sm)]"
     >
-      <p className="text-xs text-[#91a097]" aria-live="polite">
+      <p className="text-xs font-medium text-[var(--text-muted)]" aria-live="polite">
         Page {pagination.page} of {pagination.pages}
       </p>
 
@@ -20,7 +25,7 @@ function Pagination({ pagination, onPageChange }) {
           type="button"
           disabled={previousDisabled}
           onClick={() => onPageChange(pagination.page - 1)}
-          className="h-9 rounded-lg border border-white/10 px-3 text-sm text-[#b4c0b7] disabled:cursor-not-allowed disabled:opacity-40"
+          className="h-10 rounded-xl border border-[var(--border-subtle)] px-3 text-sm text-[var(--text-secondary)] transition-colors disabled:pointer-events-none disabled:opacity-40 hover:bg-[var(--surface-raised)]"
         >
           Previous
         </button>
@@ -28,7 +33,7 @@ function Pagination({ pagination, onPageChange }) {
           type="button"
           disabled={nextDisabled}
           onClick={() => onPageChange(pagination.page + 1)}
-          className="h-9 rounded-lg border border-white/10 px-3 text-sm text-[#b4c0b7] disabled:cursor-not-allowed disabled:opacity-40"
+          className="h-10 rounded-xl border border-[var(--border-subtle)] px-3 text-sm text-[var(--text-secondary)] transition-colors disabled:pointer-events-none disabled:opacity-40 hover:bg-[var(--surface-raised)]"
         >
           Next
         </button>

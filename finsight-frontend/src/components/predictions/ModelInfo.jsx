@@ -1,82 +1,51 @@
-import {
+﻿import {
   BrainCircuit,
   Database,
   Activity,
   ShieldCheck,
 } from "lucide-react";
 
-function ModelInfo({
-  modelName = "FinSight Prediction Engine",
-  modelVersion = "Current",
-  dataPoints = null,
-  confidence = null,
-}) {
+/*
+ * ModelInfo
+ * ---------
+ * Details about the prediction engine.
+ */
+function ModelInfo({ modelName = "FinSight Prediction Engine", modelVersion = "Current", dataPoints = null, confidence = null }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-purple-100 bg-gradient-to-br from-white via-blue-50/30 to-purple-50/40 p-6 shadow-sm">
-      <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-purple-300/20 blur-3xl" />
+    <div className="relative overflow-hidden rounded-3xl border border-[var(--border-subtle)] bg-gradient-to-br from-[var(--surface)] via-[var(--surface-raised)] to-[var(--surface)] p-6 shadow-[var(--shadow-sm)] sm:p-7">
+      <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-[var(--accent-soft)] blur-[64px]" />
 
       <div className="relative">
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg shadow-purple-200/40">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--gradient-primary)] text-[var(--text-inverse)] shadow-lg shadow-[var(--accent)]/30">
             <BrainCircuit size={21} />
           </div>
-
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-purple-600">
-              Intelligence Engine
-            </p>
-
-            <h3 className="mt-1 font-semibold text-slate-900">
-              {modelName}
-            </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              {modelVersion}
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">Intelligence Engine</p>
+            <h3 className="mt-1 font-semibold tracking-tight text-[var(--text-primary)]">{modelName}</h3>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">{modelVersion}</p>
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="rounded-xl border border-white bg-white/80 p-4">
-            <Database size={17} className="text-blue-600" />
-
-            <p className="mt-3 text-xs text-slate-500">
-              Data points
-            </p>
-
-            <p className="mt-1 font-semibold text-slate-900">
-              {dataPoints !== null ? dataPoints : "Available"}
-            </p>
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4">
+            <Database size={17} className="text-[var(--accent)]" />
+            <p className="mt-4 text-xs text-[var(--text-muted)]">Data points</p>
+            <p className="mt-1 font-semibold tracking-tight text-[var(--text-primary)]">{dataPoints !== null ? dataPoints : "Available"}</p>
           </div>
-
-          <div className="rounded-xl border border-white bg-white/80 p-4">
-            <Activity size={17} className="text-purple-600" />
-
-            <p className="mt-3 text-xs text-slate-500">
-              Confidence
-            </p>
-
-            <p className="mt-1 font-semibold text-slate-900">
-              {confidence !== null
-                ? `${Number(confidence).toFixed(0)}%`
-                : "Dynamic"}
-            </p>
+          <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4">
+            <Activity size={17} className="text-[var(--accent)]" />
+            <p className="mt-4 text-xs text-[var(--text-muted)]">Confidence</p>
+            <p className="mt-1 font-semibold tracking-tight text-[var(--text-primary)]">{confidence !== null ? `${Number(confidence).toFixed(0)}%` : "Dynamic"}</p>
           </div>
-
-          <div className="rounded-xl border border-white bg-white/80 p-4">
-            <ShieldCheck size={17} className="text-emerald-600" />
-
-            <p className="mt-3 text-xs text-slate-500">
-              Processing
-            </p>
-
-            <p className="mt-1 font-semibold text-slate-900">
-              Personal data
-            </p>
+          <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-raised)] p-4">
+            <ShieldCheck size={17} className="text-[var(--success)]" />
+            <p className="mt-4 text-xs text-[var(--text-muted)]">Processing</p>
+            <p className="mt-1 font-semibold tracking-tight text-[var(--text-primary)]">Personal data</p>
           </div>
         </div>
 
-        <p className="mt-5 text-xs leading-5 text-slate-500">
+        <p className="mt-7 text-xs leading-6 text-[var(--text-muted)]">
           Predictions are generated from the financial information available
           in your FinSight account. Forecasts are estimates and should be
           treated as informational rather than guaranteed outcomes.

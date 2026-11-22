@@ -1,22 +1,12 @@
-import { Loader2 } from "lucide-react";
+﻿import { Loader2 } from "lucide-react";
 
 /*
  * Button
  * ------
- * Reusable FinSight button.
+ * Reusable FinSight button with premium variants.
  *
- * Supported variants:
- * - primary
- * - secondary
- * - outline
- * - danger
- * - ghost
- *
- * Supports:
- * - loading state
- * - disabled state
- * - icons
- * - full width
+ * Variants: primary, secondary, outline, ghost, danger
+ * Sizes: small, medium, large
  */
 function Button({
   children,
@@ -32,23 +22,26 @@ function Button({
   className = "",
   ...props
 }) {
+  const base =
+    "inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-60";
+
   const variants = {
     primary:
-      "bg-[var(--accent)] text-white hover:bg-[var(--accent-strong)] shadow-[var(--shadow-sm)]",
+      "bg-[var(--accent)] text-white shadow-[var(--shadow-sm)] hover:bg-[var(--accent-strong)] focus-visible:ring-[var(--accent)]",
     secondary:
-      "bg-[var(--surface-raised)] text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] border border-[var(--border-subtle)]",
+      "bg-[var(--surface-raised)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:bg-[var(--border-subtle)] hover:text-[var(--text-primary)] focus-visible:ring-[var(--accent)]",
     outline:
-      "border border-[var(--border-subtle)] bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)]",
-    danger:
-      "bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/15",
+      "border border-[var(--border-subtle)] text-[var(--text-secondary)] bg-transparent hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)] focus-visible:ring-[var(--accent)]",
     ghost:
-      "bg-transparent text-[var(--text-muted)] hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)]",
+      "text-[var(--text-muted)] bg-transparent hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)] focus-visible:ring-[var(--accent)]",
+    danger:
+      "bg-[var(--danger)] text-white shadow-[var(--shadow-sm)] hover:bg-[#dc2626] focus-visible:ring-[var(--danger)]",
   };
 
   const sizes = {
     small: "h-9 px-3.5 text-xs",
     medium: "h-11 px-4.5 text-sm",
-    large: "h-12 px-5 text-sm",
+    large: "h-12 px-6 text-sm",
   };
 
   const isDisabled = disabled || loading;
@@ -59,18 +52,9 @@ function Button({
       disabled={isDisabled}
       onClick={onClick}
       {...props}
-      className={`
-        inline-flex items-center justify-center gap-2
-        rounded-xl
-        font-semibold
-        transition-all duration-200
-        focus:outline-none focus:ring-2 focus:ring-white/20
-        disabled:cursor-not-allowed disabled:opacity-50
-        ${variants[variant] || variants.primary}
-        ${sizes[size] || sizes.medium}
-        ${fullWidth ? "w-full" : ""}
-        ${className}
-      `}
+      className={`${base} ${variants[variant] || variants.primary} ${
+        sizes[size] || sizes.medium
+      } ${fullWidth ? "w-full" : ""} ${className}`}
     >
       {loading ? (
         <>
@@ -82,12 +66,8 @@ function Button({
           {Icon && iconPosition === "left" && (
             <Icon size={17} strokeWidth={1.9} />
           )}
-
           <span>{children}</span>
-
-          {Icon && iconPosition === "right" && (
-            <Icon size={17} strokeWidth={1.9} />
-          )}
+          {Icon && iconPosition === "right" && <Icon size={17} strokeWidth={1.9} />}
         </>
       )}
     </button>

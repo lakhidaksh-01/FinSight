@@ -1,21 +1,51 @@
-export default function MetricCard({ label, value, detail, icon: Icon, tone = "mint" }) {
+﻿/*
+ * MetricCard
+ * ----------
+ * Premium financial summary card.
+ *
+ *   <MetricCard
+ *     label="Total Income"
+ *     value="₹84,500"
+ *     detail="+12% vs last month"
+ *     icon={ArrowUpRight}
+ *     tone="success"
+ *   />
+ */
+export default function MetricCard({
+  label,
+  value,
+  detail,
+  icon: Icon,
+  tone = "primary",
+}) {
   const tones = {
-    mint: "text-[#a5d9ad] bg-[#9bd3a9]/10",
-    amber: "text-[#e2bc85] bg-[#d5a96d]/10",
-    blue: "text-[#9bc4dc] bg-[#72a8c3]/10",
-    rose: "text-[#e3a39b] bg-[#cc796e]/10",
+    primary: { icon: "bg-[var(--accent-soft)] text-[var(--accent)]" },
+    success: { icon: "bg-[var(--success-soft)] text-[var(--success)]" },
+    warning: { icon: "bg-[var(--warning-soft)] text-[var(--warning)]" },
+    danger: { icon: "bg-[var(--danger-soft)] text-[var(--danger)]" },
+    info: { icon: "bg-[var(--info-soft)] text-[var(--info)]" },
   };
 
+  const toneStyle = tones[tone] || tones.primary;
+
   return (
-    <article className="group min-w-0 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface)] p-4 shadow-[var(--shadow-sm)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-md)] sm:p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-medium text-[var(--text-muted)]">{label}</p>
-          <p className="mt-2 truncate text-xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-2xl">{value}</p>
+    <article className="group relative overflow-hidden rounded-3xl border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)] transition-all duration-200 hover:shadow-[var(--shadow-md)] hover:border-[var(--border-strong)] hover:-translate-y-1 sm:p-6">
+      {Icon && (
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl mb-3 ${toneStyle.icon}">
+          <Icon size={18} strokeWidth={2} />
         </div>
-        {Icon && <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${tones[tone] || tones.mint}`}><Icon size={17} /></span>}
+      )}
+      <div className="min-w-0">
+        <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
+          {label}
+        </p>
+        <p className="mt-1.5 text-2xl font-bold tracking-tight text-[var(--text-primary)] numeric sm:text-3xl">
+          {value}
+        </p>
       </div>
-      {detail && <p className="mt-2 text-xs text-[var(--text-muted)]">{detail}</p>}
+      {detail && (
+        <p className="mt-2.5 text-sm text-[var(--text-secondary)]">{detail}</p>
+      )}
     </article>
   );
 }

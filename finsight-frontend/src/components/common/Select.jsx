@@ -1,16 +1,11 @@
-import { ChevronDown } from "lucide-react";
+﻿import { ChevronDown } from "lucide-react";
 
 /*
  * Select
  * ------
- * Reusable dropdown field.
+ * Reusable dropdown field for FinSight.
  *
- * options format:
- *
- * [
- *   { value: "Food", label: "Food" },
- *   { value: "Transport", label: "Transport" }
- * ]
+ * options format: [{ value: "Food", label: "Food" }]
  */
 function Select({
   label,
@@ -33,8 +28,7 @@ function Select({
           className="mb-2 block text-sm font-medium text-[var(--text-secondary)]"
         >
           {label}
-
-          {required && <span className="ml-1 text-slate-500">*</span>}
+          {required && <span className="ml-1 text-[var(--text-muted)]">*</span>}
         </label>
       )}
 
@@ -46,21 +40,17 @@ function Select({
           onChange={onChange}
           required={required}
           disabled={disabled}
-          className={`
-            h-11 w-full appearance-none rounded-xl border
+          className={`h-11 w-full appearance-none rounded-xl border
             bg-[var(--surface-raised)]
-            px-4 pr-10
-            text-sm text-[var(--text-primary)]
-            outline-none
-            transition-all duration-200
+            px-4 pr-10 text-sm text-[var(--text-primary)]
+            outline-none transition-all duration-200
             disabled:cursor-not-allowed disabled:opacity-50
             ${
               error
-                ? "border-red-500/40 focus:border-red-400"
-                : "border-[var(--border-subtle)] focus:border-[var(--secondary)] focus:ring-2 focus:ring-[var(--secondary)]/10"
+                ? "border-[var(--danger)] focus:border-[var(--danger)] focus:ring-1 focus:ring-[var(--danger)]/20"
+                : "border-[var(--border-subtle)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]/20"
             }
-            ${className}
-          `}
+            ${className}`}
         >
           <option value="" disabled>
             {placeholder}
@@ -76,16 +66,13 @@ function Select({
         <ChevronDown
           size={17}
           strokeWidth={1.8}
-          className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500"
+          className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"
         />
       </div>
 
-      {error && (
-        <p className="mt-2 text-xs font-medium text-red-400">{error}</p>
-      )}
-
+      {error && <p className="mt-2 text-xs font-medium text-[var(--danger)]">{error}</p>}
       {!error && helperText && (
-        <p className="mt-2 text-xs text-slate-500">{helperText}</p>
+        <p className="mt-2 text-xs text-[var(--text-muted)]">{helperText}</p>
       )}
     </div>
   );

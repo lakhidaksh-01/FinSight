@@ -1,12 +1,13 @@
-import { Sparkles } from "lucide-react";
+﻿import { Sparkles } from "lucide-react";
 import InsightCard from "./InsightCard";
 import EmptyState from "../common/EmptyState";
 
-function InsightList({
-  insights = [],
-  onAction,
-  title = "Your Insights",
-}) {
+/*
+ * InsightList
+ * -----------
+ * Grid of insight cards.
+ */
+function InsightList({ insights = [], onAction, title = "Your Insights" }) {
   if (!insights.length) {
     return (
       <EmptyState
@@ -20,15 +21,12 @@ function InsightList({
   return (
     <div>
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
           <Sparkles size={18} />
         </div>
-
         <div>
-          <h3 className="font-semibold text-slate-900">{title}</h3>
-          <p className="mt-1 text-xs text-slate-500">
-            Highlights generated from your financial activity
-          </p>
+          <h3 className="font-semibold tracking-tight text-[var(--text-primary)]">{title}</h3>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">Highlights generated from your financial activity</p>
         </div>
       </div>
 

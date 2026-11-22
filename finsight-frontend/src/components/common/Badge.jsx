@@ -1,32 +1,22 @@
-/*
+﻿/*
  * Badge
  * -----
- * Small reusable status/category label.
+ * Small reusable status / category label.
  *
- * Supported variants:
- * - default
- * - success
- * - warning
- * - danger
- * - info
+ * Variants: default, success, warning, danger, info
  */
-function Badge({
-  children,
-  variant = "default",
-  size = "medium",
-  className = "",
-}) {
+function Badge({ children, variant = "default", size = "medium", className = "" }) {
   const variants = {
     default:
-      "border-white/[0.08] bg-white/[0.05] text-slate-300",
+      "border border-[var(--border-subtle)] bg-[var(--surface-raised)] text-[var(--text-muted)]",
     success:
-      "border-emerald-500/15 bg-emerald-500/10 text-emerald-400",
+      "border border-[var(--success)]/20 bg-[var(--success-soft)] text-[var(--success)]",
     warning:
-      "border-amber-500/15 bg-amber-500/10 text-amber-400",
+      "border border-[var(--warning)]/20 bg-[var(--warning-soft)] text-[var(--warning)]",
     danger:
-      "border-red-500/15 bg-red-500/10 text-red-400",
+      "border border-[var(--danger)]/20 bg-[var(--danger-soft)] text-[var(--danger)]",
     info:
-      "border-blue-500/15 bg-blue-500/10 text-blue-400",
+      "border border-[var(--info)]/20 bg-[var(--info-soft)] text-[var(--info)]",
   };
 
   const sizes = {
@@ -36,13 +26,9 @@ function Badge({
 
   return (
     <span
-      className={`
-        inline-flex items-center rounded-full border
-        font-medium
-        ${variants[variant] || variants.default}
-        ${sizes[size] || sizes.medium}
-        ${className}
-      `}
+      className={`inline-flex items-center rounded-full border font-medium ${
+        variants[variant] || variants.default
+      } ${sizes[size] || sizes.medium} ${className}`}
     >
       {children}
     </span>

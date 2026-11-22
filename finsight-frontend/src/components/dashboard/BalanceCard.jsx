@@ -1,80 +1,49 @@
-import { ArrowUpRight, Wallet } from "lucide-react";
+﻿import { ArrowUpRight, Wallet } from "lucide-react";
+import { Link } from "react-router-dom";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 /*
  * BalanceCard
  * -----------
- * Main balance card displayed prominently
- * on the FinSight dashboard.
+ * Hero balance card on the dashboard.
  *
- * Shows:
- * - Current balance
- * - Income
- * - Expenses
- *
- * The blue/purple gradient gives this card
- * more visual importance than normal cards.
+ * Shows current balance plus income / expenses for the selected period.
  */
-function BalanceCard({
-  balance = 0,
-  income = 0,
-  expenses = 0,
-  currency = "₹",
-}) {
-  const formatAmount = (amount) => {
-    return `${currency}${Number(amount || 0).toLocaleString("en-IN")}`;
-  };
-
+function BalanceCard({ balance = 0, income = 0, expenses = 0, currency = "₹" }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-blue-600 to-purple-600 p-6 text-white shadow-xl shadow-blue-600/20 sm:p-7">
-      {/* Decorative background circles */}
-      <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
-      <div className="pointer-events-none absolute -bottom-24 left-1/3 h-52 w-52 rounded-full bg-purple-300/20 blur-3xl" />
+    <div className="relative overflow-hidden rounded-3xl border border-[var(--border-subtle)] bg-[var(--surface)] p-6 shadow-[var(--shadow-sm)] sm:p-7">
+      <div className="pointer-events-none absolute -top-24 -left-24 h-64 w-64 rounded-full bg-[var(--accent-glass)] blur-[80px]" />
+      <div className="pointer-events-none absolute -bottom-20 -right-20 h-48 w-48 rounded-full bg-[var(--secondary-soft)] blur-[64px]" />
 
       <div className="relative">
-        {/* Header */}
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
                 <Wallet size={18} strokeWidth={1.9} />
               </div>
-
-              <span className="text-sm font-medium text-white/75">
-                Available Balance
-              </span>
+              <span className="text-sm font-medium text-[var(--text-secondary)]">Available Balance</span>
             </div>
 
-            <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">
-              {formatAmount(balance)}
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-[var(--text-primary)] numeric sm:text-5xl">
+              {formatCurrency(balance)}
             </h2>
           </div>
 
-          <div className="hidden rounded-xl bg-white/10 px-3 py-2 backdrop-blur-sm sm:flex sm:items-center sm:gap-1.5">
+          <div className="hidden rounded-xl bg-[var(--surface-raised)] px-3 py-2 backdrop-blur-sm sm:flex sm:items-center sm:gap-1.5">
             <ArrowUpRight size={15} />
-            <span className="text-xs font-semibold">Overview</span>
+            <span className="text-xs font-semibold text-[var(--text-secondary)]">Overview</span>
           </div>
         </div>
 
-        {/* Income / Expenses */}
-        <div className="mt-8 grid grid-cols-2 gap-4 border-t border-white/15 pt-5">
+        <div className="mt-8 grid grid-cols-2 gap-4 border-t border-[var(--border-subtle)] pt-5">
           <div>
-            <p className="text-xs font-medium text-white/60">
-              Total Income
-            </p>
-
-            <p className="mt-1.5 text-base font-semibold sm:text-lg">
-              {formatAmount(income)}
-            </p>
+            <p className="text-xs font-medium text-[var(--text-muted)]">Total Income</p>
+            <p className="mt-1.5 text-base font-semibold text-[var(--text-primary)] numeric">{formatCurrency(income)}</p>
           </div>
-
           <div>
-            <p className="text-xs font-medium text-white/60">
-              Total Expenses
-            </p>
-
-            <p className="mt-1.5 text-base font-semibold sm:text-lg">
-              {formatAmount(expenses)}
-            </p>
+            <p className="text-xs font-medium text-[var(--text-muted)]">Total Expenses</p>
+            <p className="mt-1.5 text-base font-semibold text-[var(--text-primary)] numeric">{formatCurrency(expenses)}</p>
           </div>
         </div>
       </div>

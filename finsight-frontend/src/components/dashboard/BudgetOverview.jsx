@@ -1,57 +1,46 @@
-import { ArrowRight, WalletCards } from "lucide-react";
+﻿import { ArrowRight, WalletCards } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatCurrency } from "../../utils/formatCurrency";
 
 /*
  * BudgetOverview
  * ---------------
- * Shows a quick overview of active budgets.
- *
- * Each budget can contain:
- * - category
- * - spent
- * - amount
- * - percentage
+ * Quick overview of active budgets on the dashboard.
  */
 function BudgetOverview({ budgets = [] }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      {/* Header */}
+    <div className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)] sm:p-6">
       <div className="flex items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
-              <WalletCards size={18} strokeWidth={1.8} />
-            </div>
-
-            <h3 className="font-semibold text-slate-900">
+        <div className="flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
+            <WalletCards size={18} strokeWidth={1.8} />
+          </div>
+          <div>
+            <h3 className="font-semibold tracking-tight text-[var(--text-primary)]">
               Budget Overview
             </h3>
+            <p className="mt-1 text-xs text-[var(--text-muted)]">
+              Track your monthly spending limits
+            </p>
           </div>
-
-          <p className="mt-2 text-xs text-slate-500">
-            Track your monthly spending limits
-          </p>
         </div>
 
         <Link
           to="/app/budgets"
-          className="flex items-center gap-1 text-xs font-semibold text-blue-600 transition-colors hover:text-purple-600"
+          className="flex items-center gap-1 text-xs font-semibold text-[var(--accent)] transition-colors hover:text-[var(--accent-strong)]"
         >
           View all
           <ArrowRight size={14} />
         </Link>
       </div>
 
-      {/* Budgets */}
-      <div className="mt-6 space-y-5">
+      <div className="mt-6 space-y-4">
         {budgets.length === 0 ? (
-          <div className="rounded-xl bg-slate-50 px-4 py-6 text-center">
-            <p className="text-sm font-medium text-slate-600">
+          <div className="rounded-2xl bg-[var(--surface-raised)] px-5 py-8 text-center">
+            <p className="text-sm font-medium text-[var(--text-secondary)]">
               No budgets created yet
             </p>
-
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-[var(--text-muted)]">
               Create a budget to start tracking your spending.
             </p>
           </div>
@@ -59,46 +48,34 @@ function BudgetOverview({ budgets = [] }) {
           budgets.slice(0, 4).map((budget) => {
             const amount = Number(budget.amount || 0);
             const spent = Number(budget.spent || 0);
-
             const percentage =
-              amount > 0
-                ? Math.round((spent / amount) * 100)
-                : 0;
-
+              amount > 0 ? Math.round((spent / amount) * 100) : 0;
             const isOverBudget = spent > amount;
 
             return (
               <div key={budget._id || budget.id || budget.category}>
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-slate-700">
+                    <p className="text-sm font-medium text-[var(--text-primary)]">
                       {budget.category}
                     </p>
-
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[var(--text-muted)]">
                       {formatCurrency(spent)} of {formatCurrency(amount)}
                     </p>
                   </div>
-
-                  <span
-                    className={`text-xs font-semibold ${
-                      isOverBudget
-                        ? "text-red-500"
-                        : "text-slate-500"
-                    }`}
-                  >
+                  <span className="text-xs font-semibold text-[var(--text-secondary)]">
                     {percentage}%
                   </span>
                 </div>
 
-                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-2 overflow-hidden rounded-full bg-[var(--border-subtle)]">
                   <div
-                    className={`h-full rounded-full transition-all ${
+                    className={`h-full rounded-full transition-all duration-700 ${
                       isOverBudget
-                        ? "bg-red-500"
-                        : "bg-gradient-to-r from-blue-500 to-purple-500"
+                        ? "bg-[var(--danger)]"
+                        : "bg-[var(--gradient-primary)]"
                     }`}
-                    style={{ width: `${percentage}%` }}
+                    style={{ width: `${Math.min(percentage, 100)}%` }}
                   />
                 </div>
               </div>

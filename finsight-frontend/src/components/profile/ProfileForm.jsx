@@ -1,66 +1,40 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import Button from "../common/Button";
 import Input from "../common/Input";
 
-function ProfileForm({
-  profile = {},
-  onSubmit,
-  loading = false,
-}) {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-  });
-
+function ProfileForm({ profile = {}, onSubmit, loading = false }) {
+  const [formData, setFormData] = useState({ name: "", email: "" });
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    setFormData({
-      name: profile.name || "",
-      email: profile.email || "",
-    });
+    setFormData({ name: profile.name || "", email: profile.email || "" });
   }, [profile]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-
-    setFormData((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
-
+    setFormData((previous) => ({ ...previous, [name]: value }));
     if (errors[name]) {
-      setErrors((previous) => ({
-        ...previous,
-        [name]: "",
-      }));
+      setErrors((previous) => ({ ...previous, [name]: "" }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-
     if (!formData.name.trim()) {
       newErrors.name = "Name is required.";
     }
-
     if (!formData.email.trim()) {
       newErrors.email = "Email is required.";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Enter a valid email address.";
     }
-
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     await onSubmit?.({
       name: formData.name.trim(),
@@ -71,16 +45,11 @@ function ProfileForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+      className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--surface)] p-6 shadow-[var(--shadow-sm)] sm:p-7"
     >
       <div className="mb-6">
-        <h3 className="font-semibold text-slate-900">
-          Personal Information
-        </h3>
-
-        <p className="mt-1 text-sm text-slate-500">
-          Keep your FinSight profile information up to date.
-        </p>
+        <h3 className="font-semibold tracking-tight text-[var(--text-primary)]">Personal Information</h3>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">Keep your FinSight profile information up to date.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -93,7 +62,6 @@ function ProfileForm({
           required
           error={errors.name}
         />
-
         <Input
           label="Email Address"
           name="email"
@@ -108,10 +76,8 @@ function ProfileForm({
         />
       </div>
 
-      <div className="mt-6 flex justify-end border-t border-slate-200 pt-5">
-        <Button type="submit" loading={loading}>
-          Save Changes
-        </Button>
+      <div className="mt-7 flex justify-end border-t border-[var(--border-subtle)] pt-6">
+        <Button type="submit" loading={loading}>Save Changes</Button>
       </div>
     </form>
   );
