@@ -28,6 +28,7 @@ import { budgetService } from "../services/budgetService";
 import { expenseService } from "../services/expenseService";
 import { goalService } from "../services/goalService";
 import { incomeService } from "../services/incomeService";
+import { predictionService } from "../services/predictionService";
 import {
   buildCombinedSeries,
   calculateFinancialHealth,
@@ -65,6 +66,7 @@ export function useAnalytics({ months: initialMonths } = {}) {
     apiSummary: null,
     apiSpending: null,
     apiSavings: null,
+    latestPrediction: null,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -96,13 +98,14 @@ export function useAnalytics({ months: initialMonths } = {}) {
         .catch(() => null),
       analyticsService.getSpending(requestFilters).catch(() => null),
       analyticsService.getSavings(requestFilters).catch(() => null),
+      predictionService.getLatestPrediction().catch(() => null),
     ])
-      .then(([expenses, incomes, budgets, goals, apiSummary, apiSpending, apiSavings]) => {
+      .then(([expenses, incomes, budgets, goals, apiSummary, apiSpending, apiSavings, latestPrediction]) => {
         if (!active) {
           return;
         }
 
-        setData({ expenses, incomes, budgets, goals, apiSummary, apiSpending, apiSavings });
+        setData({ expenses, incomes, budgets, goals, apiSummary, apiSpending, apiSavings, latestPrediction });
       })
       .catch((loadError) => {
         if (!active) {
@@ -244,10 +247,32 @@ export function useAnalytics({ months: initialMonths } = {}) {
     data.apiSavings,
   ]);
 
-  const anomalies = useMemo(
-    () => detectExpenseAnomalies(expenses, incomes),
-    [expenses, incomes]
-  );
+  const anomalies = useMemo(() => {
+    const local = detectExpenseAnomalies(expenses, incomes);
+    const serverRecords = data.latestPrediction?.metadata?.anomalies || [];
+    const server = serverRecords.map((record, index) => ({
+      id: `server-anomaly-${record.date || index}-${record.amount}`,
+      severity: "medium",
+      title: record.category ? `${record.category} anomaly` : "Unusual expense",
+      message: `The anomaly model detected an unusual expense of ${Number(record.amount || 0).toLocaleString("en-IN")}.`,
+      amount: Number(record.amount || 0),
+      category: record.category || "Expense",
+      date: record.date,
+    }));
+
+    const seen = new Set();
+
+    return [...server, ...local].filter((anomaly) => {
+      const key = `${anomaly.date || ""}-${Number(anomaly.amount || 0)}`;
+
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    });
+  }, [expenses, incomes, data.latestPrediction]);
 
   const risk = useMemo(
     () =>

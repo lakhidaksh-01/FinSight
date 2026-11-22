@@ -34,7 +34,8 @@ export const getAllIncome = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: income
+      data: income,
+      ...(income?.pagination ? { pagination: income.pagination } : {})
     });
   } catch (error) {
     next(error);

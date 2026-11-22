@@ -5,6 +5,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ROUTES } from "../../constants/app";
 
 /*
  * QuickInsights
@@ -63,7 +64,7 @@ function QuickInsights({ insights = [] }) {
           </div>
 
           <Link
-            to="/app/ai-insights"
+            to={ROUTES.ANALYTICS}
             className="flex items-center gap-1 text-xs font-semibold text-purple-600 transition-colors hover:text-blue-600"
           >
             Explore

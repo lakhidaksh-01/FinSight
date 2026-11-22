@@ -1,10 +1,20 @@
 import Expense from "../models/Expense.js";
 import ApiError from "../utils/apiError.js";
+import { getPagination, buildPaginatedResult } from "../utils/pagination.js";
 
 // Add expense
 export const createExpense = async (userId, data) => {
+  const allowedFields = ["amount", "category", "description", "notes", "date"];
+  const expenseData = {};
+
+  allowedFields.forEach((field) => {
+    if (data[field] !== undefined) {
+      expenseData[field] = data[field];
+    }
+  });
+
   const expense = await Expense.create({
-    ...data,
+    ...expenseData,
     user: userId
   });
 
@@ -31,8 +41,29 @@ export const getExpenses = async (userId, query) => {
     }
   }
 
-  const expenses = await Expense.find(filter)
-    .sort({ date: -1 });
+  if (query.search) {
+    const escaped = String(query.search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    filter.$or = [
+      { description: { $regex: escaped, $options: "i" } },
+      { category: { $regex: escaped, $options: "i" } },
+      { notes: { $regex: escaped, $options: "i" } }
+    ];
+  }
+
+  const paginated = query.page !== undefined || query.limit !== undefined;
+  const pagination = getPagination(query);
+
+  const [expenses, total] = await Promise.all([
+    Expense.find(filter)
+      .sort({ date: -1, _id: -1 })
+      .skip(paginated ? pagination.skip : 0)
+      .limit(paginated ? pagination.limit : 0),
+    paginated ? Expense.countDocuments(filter) : Promise.resolve(0)
+  ]);
+
+  if (paginated) {
+    return buildPaginatedResult(expenses, total, pagination);
+  }
 
   return expenses;
 };
@@ -57,12 +88,21 @@ export const updateExpense = async (
   expenseId,
   data
 ) => {
+  const allowedFields = ["amount", "category", "description", "notes", "date"];
+  const updates = {};
+
+  allowedFields.forEach((field) => {
+    if (data[field] !== undefined) {
+      updates[field] = data[field];
+    }
+  });
+
   const expense = await Expense.findOneAndUpdate(
     {
       _id: expenseId,
       user: userId
     },
-    data,
+    updates,
     {
       new: true,
       runValidators: true

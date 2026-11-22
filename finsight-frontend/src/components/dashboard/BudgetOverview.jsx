@@ -1,5 +1,6 @@
 import { ArrowRight, WalletCards } from "lucide-react";
 import { Link } from "react-router-dom";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 /*
  * BudgetOverview
@@ -13,10 +14,6 @@ import { Link } from "react-router-dom";
  * - percentage
  */
 function BudgetOverview({ budgets = [] }) {
-  const formatAmount = (amount) => {
-    return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
-  };
-
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       {/* Header */}
@@ -65,7 +62,7 @@ function BudgetOverview({ budgets = [] }) {
 
             const percentage =
               amount > 0
-                ? Math.min(100, Math.round((spent / amount) * 100))
+                ? Math.round((spent / amount) * 100)
                 : 0;
 
             const isOverBudget = spent > amount;
@@ -79,7 +76,7 @@ function BudgetOverview({ budgets = [] }) {
                     </p>
 
                     <p className="text-xs text-slate-400">
-                      {formatAmount(spent)} of {formatAmount(amount)}
+                      {formatCurrency(spent)} of {formatCurrency(amount)}
                     </p>
                   </div>
 

@@ -11,57 +11,26 @@
  *   } = usePredictions();
  *
  * Where the number comes from
- *   The Python models under backend-v1/ml are not exposed by the API, so the
- *   forecast is a least-squares fit (linearForecast) over the user's own
- *   monthly totals. That keeps the prediction explainable and it works offline.
- *
- *   The result is then persisted through POST /api/predictions, one record per
- *   projected month, so the Predictions page can show a real history and the
- *   backend stays the record of what was predicted and when.
- *
- * Confidence is the R-squared of the fit mapped to a 45-96 band; with fewer
- * than MIN_MONTHS_FOR_FORECAST months of history the forecast is still shown
- * but flagged as not trustworthy.
+ *   The Python forecasting and anomaly pipeline is invoked by the Express API.
+ *   It receives monthly totals derived from the user's expense records, and
+ *   persists the generated forecast points in MongoDB.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   DEFAULT_PREDICTION_MONTHS,
   MIN_MONTHS_FOR_FORECAST,
-  PREDICTION_MODEL_LABEL,
 } from "../constants/app";
 import { expenseService } from "../services/expenseService";
 import { incomeService } from "../services/incomeService";
-import { PREDICTION_TYPES, predictionService } from "../services/predictionService";
+import { predictionService } from "../services/predictionService";
 import {
   buildForecastChartSeries,
   buildMonthlySeries,
-  linearForecast,
 } from "../utils/calculations";
-import { toMonthKey } from "../utils/formatDate";
 
 const DEFAULT_HISTORY_MONTHS = 6;
 const HISTORY_CHOICES = [3, 6, 12];
-
-/*
- * Labels for the months that follow today, aligned with the labels
- * buildMonthlySeries produces for the past.
- */
-const futureMonths = (steps = 3) => {
-  const now = new Date();
-
-  return Array.from({ length: Math.max(1, steps) }, (_, index) => {
-    const date = new Date(now.getFullYear(), now.getMonth() + index + 1, 1);
-
-    return {
-      key: toMonthKey(date),
-      label: new Intl.DateTimeFormat("en-GB", {
-        month: "short",
-        year: "2-digit",
-      }).format(date),
-    };
-  });
-};
 
 export function usePredictions(options = {}) {
   const [historyMonths, setHistoryMonths] = useState(
@@ -75,6 +44,9 @@ export function usePredictions(options = {}) {
   const [history, setHistory] = useState([]);
   const [latest, setLatest] = useState(null);
   const [saved, setSaved] = useState([]);
+  const [serverForecast, setServerForecast] = useState([]);
+  const [anomalies, setAnomalies] = useState([]);
+  const [anomalyCount, setAnomalyCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState(null);
@@ -133,26 +105,16 @@ export function usePredictions(options = {}) {
     [expenseRecords, historyMonths]
   );
 
-  const fit = useMemo(
-    () => linearForecast(historicalSeries.map((point) => point.amount), horizon),
-    [historicalSeries, horizon]
+  const forecast = useMemo(
+    () => serverForecast.map((record) => ({
+      key: record.period,
+      label: record.period,
+      amount: record.predictedAmount,
+      confidence: record.confidence,
+      metadata: record.metadata || {},
+    })),
+    [serverForecast]
   );
-
-  const forecast = useMemo(() => {
-    const months = futureMonths(horizon);
-
-    return months.map((month, index) => ({
-      ...month,
-      amount: fit.values[index] || 0,
-      confidence: fit.confidence,
-      metadata: {
-        trend: fit.trend,
-        historyMonths,
-        dataPoints: fit.dataPoints,
-        model: PREDICTION_MODEL_LABEL,
-      },
-    }));
-  }, [fit, horizon, historyMonths]);
 
   const chartSeries = useMemo(
     () => buildForecastChartSeries(historicalSeries, forecast),
@@ -164,11 +126,15 @@ export function usePredictions(options = {}) {
     setError(null);
 
     try {
-      const records = await predictionService.saveForecast(forecast, {
-        predictionType: PREDICTION_TYPES.MONTHLY_SPENDING,
-        model: PREDICTION_MODEL_LABEL,
+      const result = await predictionService.generateForecast({
+        historyMonths,
+        horizon,
       });
 
+      const records = result.forecasts;
+      setServerForecast(records);
+      setAnomalies(result.anomalies || []);
+      setAnomalyCount(result.anomalyCount || 0);
       setSaved(records);
       setHistory((previous) => [...records, ...previous]);
       setLatest(records[records.length - 1] || null);
@@ -180,7 +146,7 @@ export function usePredictions(options = {}) {
     } finally {
       setGenerating(false);
     }
-  }, [forecast]);
+  }, [historyMonths, horizon]);
 
   const totalIncome = useMemo(
     () => buildMonthlySeries(incomeRecords, historyMonths).reduce((sum, item) => sum + item.amount, 0),
@@ -195,9 +161,9 @@ export function usePredictions(options = {}) {
     historicalSeries,
     forecast,
     chartSeries,
-    confidence: fit.confidence,
-    trend: fit.trend,
-    insufficientData: historyMonths < MIN_MONTHS_FOR_FORECAST || !fit.sufficientData,
+    confidence: serverForecast[0]?.confidence || 0,
+    trend: serverForecast[0]?.metadata?.trend || "stable",
+    insufficientData: historyMonths < MIN_MONTHS_FOR_FORECAST,
     generating,
     saved,
     generate,
@@ -206,6 +172,8 @@ export function usePredictions(options = {}) {
     loading,
     error,
     refresh,
+    anomalies,
+    anomalyCount,
     totalIncome,
   };
 }

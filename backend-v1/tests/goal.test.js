@@ -25,6 +25,7 @@ describe("Goal API", () => {
         targetAmount: 100000,
         currentAmount: 20000,
         targetDate: "2027-12-31",
+        category: "Emergency",
         description: "Build emergency savings"
       });
 
@@ -33,6 +34,7 @@ describe("Goal API", () => {
     expect(response.body.success).toBe(true);
 
     goalId = response.body.data._id;
+    expect(response.body.data.category).toBe("Emergency");
   });
 
   test("should get all goals", async () => {

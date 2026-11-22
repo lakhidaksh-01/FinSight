@@ -6,13 +6,14 @@ export const registerValidator = [
     .notEmpty()
     .withMessage("Email is required")
     .isEmail()
-    .withMessage("Please provide a valid email"),
+    .withMessage("Please provide a valid email")
+    .normalizeEmail(),
 
   body("password")
     .notEmpty()
     .withMessage("Password is required")
-    .isLength({ min: 6 })
-    .withMessage("Password must be at least 6 characters long")
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters long")
 ];
 
 export const loginValidator = [
@@ -21,7 +22,8 @@ export const loginValidator = [
     .notEmpty()
     .withMessage("Email is required")
     .isEmail()
-    .withMessage("Please provide a valid email"),
+    .withMessage("Please provide a valid email")
+    .normalizeEmail(),
 
   body("password")
     .notEmpty()
@@ -61,8 +63,8 @@ export const resetPasswordValidator = [
     .withMessage("Reset token is required"),
 
   body("newPassword")
-    .isLength({ min: 6 })
+    .isLength({ min: 8 })
     .withMessage(
-      "Password must be at least 6 characters"
+      "Password must be at least 8 characters"
     )
 ];

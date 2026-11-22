@@ -13,11 +13,12 @@ import IncomeTable from "../../components/income/IncomeTable";
 import PageHeader from "../../components/layout/PageHeader";
 import { useIncome } from "../../hooks/useIncome";
 import { formatCurrency } from "../../utils/formatCurrency";
+import Pagination from "../../components/common/Pagination";
 
 export default function Income() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { incomes, filters, setFilters, resetFilters, loading, saving, error, refresh, createIncome, updateIncome, deleteIncome, summary } = useIncome();
+  const { incomes, filters, setFilters, resetFilters, pagination, setPage, loading, saving, error, refresh, createIncome, updateIncome, deleteIncome, summary } = useIncome();
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [formError, setFormError] = useState("");
@@ -57,6 +58,7 @@ export default function Income() {
     <IncomeFilters filters={filters} onChange={setFilters} onReset={resetFilters} />
     {error && <ErrorState message={error} onRetry={refresh} />}
     {!error && <IncomeTable incomes={incomes} loading={loading} onEdit={setEditing} onDelete={setDeleting} />}
+    {!loading && !error && <Pagination pagination={pagination} onPageChange={setPage} />}
     <Modal isOpen={editing !== null} onClose={() => { setEditing(null); setFormError(""); }} title={editing ? "Edit income" : "Add income"} description="Changes are saved to your account.">
       {formError && <p role="alert" className="mb-4 rounded-lg border border-red-400/20 bg-red-400/[0.08] px-3 py-2.5 text-sm text-red-300">{formError}</p>}
       <IncomeForm initialData={editing || null} onSubmit={save} onCancel={() => setEditing(null)} loading={saving} />

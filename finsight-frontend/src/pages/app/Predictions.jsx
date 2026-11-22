@@ -11,7 +11,7 @@ import { usePredictions } from "../../hooks/usePredictions";
 import { formatCurrency } from "../../utils/formatCurrency";
 
 export default function Predictions() {
-  const { historyMonths, setHistoryMonths, horizon, setHorizon, forecast, chartSeries, confidence, trend, insufficientData, generating, generate, history, latest, loading, error, refresh } = usePredictions();
+  const { historyMonths, setHistoryMonths, horizon, setHorizon, forecast, chartSeries, confidence, trend, insufficientData, generating, generate, history, latest, loading, error, refresh, anomalyCount } = usePredictions();
   const [selected, setSelected] = useState(null);
   const trendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Activity;
 
@@ -37,7 +37,7 @@ export default function Predictions() {
     <div className="flex flex-wrap items-end gap-4 rounded-xl border border-white/[0.08] bg-[#121a16] p-4">
       <label className="grid gap-2 text-xs text-[#91a097]">History window<select value={historyMonths} onChange={(event) => setHistoryMonths(event.target.value)} className="h-10 rounded-lg border border-white/10 bg-[#0d1410] px-3 text-sm text-white"><option value="3">3 months</option><option value="6">6 months</option><option value="12">12 months</option></select></label>
       <label className="grid gap-2 text-xs text-[#91a097]">Forecast horizon<select value={horizon} onChange={(event) => setHorizon(event.target.value)} className="h-10 rounded-lg border border-white/10 bg-[#0d1410] px-3 text-sm text-white">{[1, 2, 3, 6, 9, 12].map((months) => <option key={months} value={months}>{months} {months === 1 ? "month" : "months"}</option>)}</select></label>
-      <p className="ml-auto max-w-sm text-xs leading-5 text-[#829087]">Forecasts use a linear fit of your own monthly expense totals; they are estimates, not financial advice.</p>
+      <p className="ml-auto max-w-sm text-xs leading-5 text-[#829087]">{anomalyCount > 0 ? `The latest model run detected ${anomalyCount} unusual expense${anomalyCount === 1 ? "" : "s"}. ` : ""}Forecasts use the server ML pipeline and your recorded monthly expense totals; they are estimates, not financial advice.</p>
     </div>
     <PredictionChart data={chartSeries} title="Spending forecast" description="Historical monthly expenses and projected future spending." />
     <PredictionHistory predictions={history} onSelect={setSelected} />

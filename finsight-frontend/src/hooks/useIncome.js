@@ -43,6 +43,8 @@ export function useIncome(initialFilters = {}) {
     ...initialFilters,
   });
   const [records, setRecords] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [page, setPage] = useState(initialFilters.page || 1);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -51,8 +53,11 @@ export function useIncome(initialFilters = {}) {
 
   const queryKey = JSON.stringify({
     source: filters.source,
+    search: filters.search,
     dateFrom: filters.dateFrom,
     dateTo: filters.dateTo,
+    page,
+    limit: 20,
   });
 
   useEffect(() => {
@@ -64,13 +69,14 @@ export function useIncome(initialFilters = {}) {
     setError(null);
 
     incomeService
-      .getIncomes(JSON.parse(queryKey))
-      .then((data) => {
+      .getPaginatedIncomes(JSON.parse(queryKey))
+      .then((result) => {
         if (!active || requestId.current !== currentRequest) {
           return;
         }
 
-        setRecords(data);
+        setRecords(result.items);
+        setPagination(result.pagination);
       })
       .catch((loadError) => {
         if (!active || requestId.current !== currentRequest) {
@@ -92,6 +98,10 @@ export function useIncome(initialFilters = {}) {
       active = false;
     };
   }, [queryKey, version]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filters.source, filters.search, filters.dateFrom, filters.dateTo]);
 
   const incomes = useMemo(
     () =>
@@ -179,6 +189,8 @@ export function useIncome(initialFilters = {}) {
     setFilters,
     setFilter,
     resetFilters,
+    pagination,
+    setPage,
     loading,
     saving,
     error,

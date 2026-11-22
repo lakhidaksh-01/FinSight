@@ -11,7 +11,7 @@ const expenseSchema = new mongoose.Schema(
     amount: {
       type: Number,
       required: true,
-      min: 0
+      min: 0.01
     },
 
     category: {
@@ -24,6 +24,13 @@ const expenseSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 500
+    },
+
+    notes: {
+      type: String,
+      trim: true,
+      maxlength: 1000,
+      default: ""
     },
 
     date: {
@@ -39,6 +46,8 @@ const expenseSchema = new mongoose.Schema(
 
 expenseSchema.index({ user: 1, date: -1 });
 expenseSchema.index({ user: 1, category: 1 });
+expenseSchema.index({ user: 1, date: -1, category: 1 });
+expenseSchema.index({ user: 1, description: "text", notes: "text" });
 
 const Expense = mongoose.model("Expense", expenseSchema);
 

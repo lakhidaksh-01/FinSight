@@ -27,7 +27,6 @@ export const NAVIGATION_GROUPS = [
     items: [
       { label: "Analytics", path: ROUTES.ANALYTICS },
       { label: "Predictions", path: ROUTES.PREDICTIONS },
-      { label: "AI Insights", path: ROUTES.AI_INSIGHTS },
     ],
   },
   {
@@ -94,13 +93,6 @@ export const PAGE_META = {
     description:
       "Forecast upcoming spending from your own recorded history.",
     breadcrumbs: [{ label: "Predictions" }],
-  },
-  [ROUTES.AI_INSIGHTS]: {
-    title: "AI Insights",
-    eyebrow: "Intelligence",
-    description:
-      "Patterns, anomalies and risk signals detected from your financial activity.",
-    breadcrumbs: [{ label: "AI Insights" }],
   },
   [ROUTES.PROFILE]: {
     title: "Profile",

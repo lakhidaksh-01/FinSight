@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 /*
  * Modal
@@ -16,11 +16,21 @@ function Modal({
   size = "medium",
   showCloseButton = true,
 }) {
+  const panelRef = useRef(null);
+  const previousFocusRef = useRef(null);
+
   // Close the modal when Escape is pressed.
   useEffect(() => {
     if (!isOpen) {
       return;
     }
+
+    previousFocusRef.current = document.activeElement;
+    const panel = panelRef.current;
+
+    window.requestAnimationFrame(() => {
+      panel?.querySelector("button, input, select, textarea, [tabindex]:not([tabindex='-1'])")?.focus();
+    });
 
     const handleEscape = (event) => {
       if (event.key === "Escape") {
@@ -28,10 +38,41 @@ function Modal({
       }
     };
 
+    const handleFocusTrap = (event) => {
+      if (event.key !== "Tab" || !panel) {
+        return;
+      }
+
+      const focusable = [...panel.querySelectorAll(
+        "button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
+      )];
+
+      if (!focusable.length) {
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
     document.addEventListener("keydown", handleEscape);
+    document.addEventListener("keydown", handleFocusTrap);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("keydown", handleFocusTrap);
+      document.body.style.overflow = previousOverflow;
+      previousFocusRef.current?.focus?.();
     };
   }, [isOpen, onClose]);
 
@@ -59,6 +100,7 @@ function Modal({
 
       {/* Modal content */}
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"

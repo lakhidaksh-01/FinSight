@@ -75,7 +75,8 @@ export const budgetService = {
 
     const response = await api.get(RESOURCE, { params });
 
-    return (unwrap(response) || []).map(fromApiRecord);
+    const data = unwrap(response);
+    return (Array.isArray(data) ? data : data?.items || []).map(fromApiRecord);
   },
 
   async getBudget(id) {

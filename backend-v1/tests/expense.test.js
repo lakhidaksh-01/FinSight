@@ -65,7 +65,8 @@ describe("Expense API", () => {
       .put(`/api/expenses/${expenseId}`)
       .set("Authorization", `Bearer ${token}`)
       .send({
-        amount: 750
+        amount: 750,
+        notes: "Team lunch"
       });
 
     expect(response.statusCode).toBe(200);
@@ -73,6 +74,7 @@ describe("Expense API", () => {
     expect(response.body.success).toBe(true);
 
     expect(response.body.data.amount).toBe(750);
+    expect(response.body.data.notes).toBe("Team lunch");
   });
 
   test("should delete an expense", async () => {
@@ -83,5 +85,32 @@ describe("Expense API", () => {
     expect(response.statusCode).toBe(200);
 
     expect(response.body.success).toBe(true);
+  });
+
+  test("should not allow another user to access the expense", async () => {
+    const secondUser = await request(app)
+      .post("/api/auth/register")
+      .send({
+        email: `expense-owner-${Date.now()}@example.com`,
+        password: "Test@123456"
+      });
+
+    const createResponse = await request(app)
+      .post("/api/expenses")
+      .set("Authorization", `Bearer ${secondUser.body.data.token}`)
+      .send({
+        amount: 200,
+        category: "Food",
+        description: "Second user's expense",
+        date: new Date().toISOString()
+      });
+
+    const foreignExpenseId = createResponse.body.data._id;
+
+    const response = await request(app)
+      .get(`/api/expenses/${foreignExpenseId}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(404);
   });
 });

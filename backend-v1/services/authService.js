@@ -21,14 +21,23 @@ export const registerUser = async ({
   email,
   password
 }) => {
-  if (!email || !password) {
+  if (!email || typeof email !== "string" || !password) {
     throw new ApiError(
       400,
       "Email and password are required"
     );
   }
 
-  const existingUser = await User.findOne({ email });
+  if (typeof password !== "string" || password.length < 8) {
+    throw new ApiError(
+      400,
+      "Password must be at least 8 characters"
+    );
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+
+  const existingUser = await User.findOne({ email: normalizedEmail });
 
   if (existingUser) {
     throw new ApiError(
@@ -43,7 +52,7 @@ export const registerUser = async ({
   );
 
   const user = await User.create({
-    email,
+    email: normalizedEmail,
     password: hashedPassword
   });
 
@@ -61,14 +70,15 @@ export const loginUser = async ({
   email,
   password
 }) => {
-  if (!email || !password) {
+  if (!email || typeof email !== "string" || !password) {
     throw new ApiError(
       400,
       "Email and password are required"
     );
   }
 
-  const user = await User.findOne({ email });
+  const normalizedEmail = email.toLowerCase().trim();
+  const user = await User.findOne({ email: normalizedEmail });
 
   if (!user) {
     throw new ApiError(
@@ -154,6 +164,13 @@ export const updateProfile = async (
 
 // Send password reset OTP
 export const forgotPassword = async (email) => {
+  if (!email || typeof email !== "string") {
+    throw new ApiError(
+      400,
+      "Email is required"
+    );
+  }
+
   const normalizedEmail = email
     .toLowerCase()
     .trim();
@@ -217,6 +234,13 @@ export const verifyPasswordResetOtp = async (
   email,
   otp
 ) => {
+  if (!email || typeof email !== "string" || !otp) {
+    throw new ApiError(
+      400,
+      "Email and OTP are required"
+    );
+  }
+
   const normalizedEmail = email
     .toLowerCase()
     .trim();
@@ -255,6 +279,21 @@ export const verifyPasswordResetOtp = async (
     );
   }
 
+  const MAX_OTP_ATTEMPTS = 5;
+
+  const currentAttempts = Number(resetRequest.attempts) || 0;
+
+  if (currentAttempts >= MAX_OTP_ATTEMPTS) {
+    await PasswordReset.deleteOne({
+      _id: resetRequest._id
+    });
+
+    throw new ApiError(
+      429,
+      "Too many invalid OTP attempts"
+    );
+  }
+
   // Compare entered OTP with stored hash
   const isOtpValid = await bcrypt.compare(
     otp,
@@ -262,6 +301,9 @@ export const verifyPasswordResetOtp = async (
   );
 
   if (!isOtpValid) {
+    resetRequest.attempts = currentAttempts + 1;
+    await resetRequest.save();
+
     throw new ApiError(
       400,
       "Invalid or expired OTP"
@@ -292,6 +334,9 @@ export const verifyPasswordResetOtp = async (
   resetRequest.resetTokenExpiresAt =
     resetTokenExpiresAt;
 
+  resetRequest.expiresAt =
+    resetTokenExpiresAt;
+
   await resetRequest.save();
 
   return {
@@ -305,6 +350,19 @@ export const resetPassword = async (
   resetToken,
   newPassword
 ) => {
+  if (
+    !email ||
+    typeof email !== "string" ||
+    !resetToken ||
+    typeof newPassword !== "string" ||
+    newPassword.length < 8
+  ) {
+    throw new ApiError(
+      400,
+      "Invalid reset information"
+    );
+  }
+
   const normalizedEmail = email
     .toLowerCase()
     .trim();

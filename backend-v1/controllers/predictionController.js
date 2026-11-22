@@ -1,5 +1,5 @@
 import {
-  createPrediction,
+  generatePredictions,
   getPredictions,
   getLatestPrediction
 } from "../services/predictionService.js";
@@ -7,15 +7,15 @@ import {
 // Create prediction
 export const predictSpending = async (req, res, next) => {
   try {
-    const prediction = await createPrediction(
+    const result = await generatePredictions(
       req.user._id,
       req.body
     );
 
     res.status(200).json({
       success: true,
-      message: "Prediction created successfully",
-      data: prediction
+      message: "Forecast generated successfully",
+      data: result
     });
   } catch (error) {
     next(error);
@@ -26,12 +26,14 @@ export const predictSpending = async (req, res, next) => {
 export const getPredictionHistory = async (req, res, next) => {
   try {
     const predictions = await getPredictions(
-      req.user._id
+      req.user._id,
+      req.query
     );
 
     res.status(200).json({
       success: true,
-      data: predictions
+      data: predictions,
+      ...(predictions?.pagination ? { pagination: predictions.pagination } : {})
     });
   } catch (error) {
     next(error);

@@ -82,7 +82,13 @@ def engineer_features(df):
 
     result = create_rolling_features(result)
 
-    result = result.dropna()
+    result = result.fillna({
+        "lag_1": 0,
+        "lag_2": 0,
+        "lag_3": 0,
+        "rolling_mean_3": 0,
+        "rolling_mean_7": 0,
+    })
 
     result = result.reset_index(drop=True)
 

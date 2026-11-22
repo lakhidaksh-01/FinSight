@@ -111,10 +111,52 @@ export const getPreferences = () =>
   });
 
 export const setPreferences = (preferences) => {
-  writeItem(STORAGE_KEYS.PREFERENCES, {
+  const next = {
     ...getPreferences(),
     ...(preferences || {}),
-  });
+  };
+
+  writeItem(STORAGE_KEYS.PREFERENCES, next);
+
+  if (typeof document !== "undefined") {
+    const resolved =
+      next.theme === "system"
+        ? (window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+        : (next.theme === "dark" ? "dark" : "light");
+
+    document.documentElement.dataset.theme = resolved;
+  }
+};
+
+export const applyThemePreference = (preferences = getPreferences()) => {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  const theme = preferences?.theme;
+  const resolved =
+    theme === "system"
+      ? (window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+      : (theme === "dark" ? "dark" : "light");
+
+  document.documentElement.dataset.theme = resolved;
+};
+
+export const watchSystemTheme = () => {
+  if (typeof window === "undefined" || !window.matchMedia) {
+    return undefined;
+  }
+
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+  const sync = () => applyThemePreference();
+
+  if (typeof media.addEventListener === "function") {
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }
+
+  media.addListener(sync);
+  return () => media.removeListener(sync);
 };
 
 /*
@@ -154,6 +196,8 @@ export const storage = {
   setCachedUser,
   getPreferences,
   setPreferences,
+  applyThemePreference,
+  watchSystemTheme,
   getResetSession,
   setResetSession,
   clearSession,

@@ -17,24 +17,43 @@ describe("Prediction API", () => {
   });
 
   test("should create a prediction", async () => {
+    const now = new Date();
+
+    for (let monthOffset = 0; monthOffset < 3; monthOffset += 1) {
+      const date = new Date(
+        now.getFullYear(),
+        now.getMonth() - monthOffset,
+        10
+      );
+
+      await request(app)
+        .post("/api/expenses")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          amount: 10000 + monthOffset * 500,
+          category: "Food",
+          description: "Forecast test expense",
+          date: date.toISOString()
+        });
+    }
+
     const response = await request(app)
       .post("/api/predictions")
       .set("Authorization", `Bearer ${token}`)
       .send({
-        predictionType: "monthly_expense",
-        predictedAmount: 25000,
-        period: "2026-10",
-        confidence: 85,
-        model: "linear_regression"
+        historyMonths: 6,
+        horizon: 3
       });
 
     expect(response.statusCode).toBe(200);
 
     expect(response.body.success).toBe(true);
 
-    expect(response.body.data).toHaveProperty("_id");
+    expect(Array.isArray(response.body.data.forecasts)).toBe(true);
+    expect(response.body.data.forecasts.length).toBe(3);
+    expect(response.body.data.forecasts[0]).toHaveProperty("_id");
 
-    predictionId = response.body.data._id;
+    predictionId = response.body.data.forecasts[0]._id;
   });
 
   test("should get prediction history", async () => {
@@ -58,8 +77,7 @@ describe("Prediction API", () => {
 
     expect(response.body.success).toBe(true);
 
-    expect(response.body.data._id).toBe(
-      predictionId
-    );
+    expect(response.body.data).toHaveProperty("_id");
+    expect(response.body.data.predictionType).toBe("expense_forecast");
   });
 });

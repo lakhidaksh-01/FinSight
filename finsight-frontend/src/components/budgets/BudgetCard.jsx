@@ -3,7 +3,6 @@ import {
   Trash2,
   WalletCards,
   CalendarDays,
-  ArrowUpRight,
 } from "lucide-react";
 import Button from "../common/Button";
 import { formatCurrency } from "../../utils/formatCurrency";

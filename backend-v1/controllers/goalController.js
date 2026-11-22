@@ -27,11 +27,12 @@ export const addGoal = async (req, res, next) => {
 // Get goals
 export const getAllGoals = async (req, res, next) => {
   try {
-    const goals = await getGoals(req.user._id);
+    const goals = await getGoals(req.user._id, req.query);
 
     res.status(200).json({
       success: true,
-      data: goals
+      data: goals,
+      ...(goals?.pagination ? { pagination: goals.pagination } : {})
     });
   } catch (error) {
     next(error);

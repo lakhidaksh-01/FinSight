@@ -36,7 +36,7 @@ describe("Profile API", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({
         name: "FinSight User",
-        currency: "INR"
+        currency: "USD"
       });
 
     expect(response.statusCode).toBe(200);
@@ -46,6 +46,7 @@ describe("Profile API", () => {
     expect(response.body.data.name).toBe(
       "FinSight User"
     );
+    expect(response.body.data.currency).toBe("USD");
   });
 
   test("should reject profile request without token", async () => {

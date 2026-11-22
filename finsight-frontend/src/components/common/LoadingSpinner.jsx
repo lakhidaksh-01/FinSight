@@ -20,6 +20,8 @@ function LoadingSpinner({
 
   return (
     <div
+      role="status"
+      aria-live="polite"
       className={`flex items-center justify-center gap-2 text-slate-400 ${className}`}
     >
       <Loader2

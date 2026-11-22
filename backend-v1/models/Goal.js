@@ -15,6 +15,13 @@ const goalSchema = new mongoose.Schema(
       maxlength: 100
     },
 
+    category: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+      default: "Savings"
+    },
+
     targetAmount: {
       type: Number,
       required: true,

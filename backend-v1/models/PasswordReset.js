@@ -34,11 +34,22 @@ const passwordResetSchema = new mongoose.Schema(
     resetTokenExpiresAt: {
       type: Date,
       default: null
+    },
+
+    attempts: {
+      type: Number,
+      default: 0,
+      min: 0
     }
   },
   {
     timestamps: true
   }
+);
+
+passwordResetSchema.index(
+  { expiresAt: 1 },
+  { expireAfterSeconds: 0 }
 );
 
 const PasswordReset = mongoose.model(

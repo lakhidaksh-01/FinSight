@@ -1,4 +1,5 @@
 from sklearn.linear_model import LinearRegression
+import pandas as pd
 
 
 def train_linear_regression(
@@ -72,3 +73,63 @@ def predict_next(
     return float(
         max(0, prediction[0])
     )
+
+
+def predict_sequence(
+    model,
+    df,
+    features,
+    horizon=3
+):
+    if model is None or df.empty:
+        return [0.0] * horizon
+
+    available_features = [
+        feature
+        for feature in features
+        if feature in df.columns
+    ]
+
+    if not available_features:
+        return [0.0] * horizon
+
+    work = df.copy().sort_values("date").reset_index(drop=True)
+    forecast = []
+
+    for _ in range(max(1, min(12, int(horizon)))):
+        latest = work.iloc[-1]
+        next_date = latest["date"] + pd.DateOffset(months=1)
+
+        lag_1 = float(work["amount"].iloc[-1]) if len(work) else 0.0
+        lag_2 = float(work["amount"].iloc[-2]) if len(work) >= 2 else lag_1
+        lag_3 = float(work["amount"].iloc[-3]) if len(work) >= 3 else lag_2
+        rolling_3 = float(work["amount"].tail(3).mean())
+        rolling_7 = float(work["amount"].tail(7).mean())
+
+        future_row = {
+            "year": next_date.year,
+            "month": next_date.month,
+            "dayOfWeek": next_date.dayofweek,
+            "dayOfYear": next_date.dayofyear,
+            "lag_1": lag_1,
+            "lag_2": lag_2,
+            "lag_3": lag_3,
+            "rolling_mean_3": rolling_3,
+            "rolling_mean_7": rolling_7,
+        }
+
+        row = pd.DataFrame([future_row])[available_features]
+        prediction = float(model.predict(row)[0])
+        prediction = max(0.0, prediction)
+        forecast.append(round(prediction, 2))
+
+        work = pd.concat(
+            [work, pd.DataFrame([{
+                "date": next_date,
+                "amount": prediction,
+                "category": "Expense"
+            }])],
+            ignore_index=True
+        )
+
+    return forecast

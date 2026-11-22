@@ -39,7 +39,7 @@ function CategoryChart({
         </div>
       </div>
 
-      <div className="h-[330px] w-full">
+      <div className="h-[330px] w-full" role="img" aria-label={`${title}. ${data.length ? `${data.length} categories shown.` : "No data available."}`}>
         {!data.length ? (
           <div className="flex h-full items-center justify-center rounded-xl bg-slate-50 text-sm text-slate-500">
             No category data available yet.

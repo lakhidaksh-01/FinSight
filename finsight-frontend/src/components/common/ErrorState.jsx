@@ -13,7 +13,7 @@ function ErrorState({
   onRetry,
 }) {
   return (
-    <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-red-500/10 bg-red-500/[0.03] px-6 py-10 text-center">
+    <div role="alert" className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-red-500/10 bg-red-500/[0.03] px-6 py-10 text-center">
       {/* Error icon */}
       <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-red-500/15 bg-red-500/[0.08] text-red-400">
         <AlertCircle size={25} strokeWidth={1.7} />

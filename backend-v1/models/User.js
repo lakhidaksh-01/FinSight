@@ -19,14 +19,15 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      minlength: 6,
+      minlength: 8,
       select: true
     },
 
     currency: {
       type: String,
       default: "INR",
-      trim: true
+      trim: true,
+      enum: ["INR", "USD", "CAD", "EUR", "GBP"]
     },
 
     preferences: {

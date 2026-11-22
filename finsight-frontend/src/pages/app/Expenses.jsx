@@ -13,11 +13,12 @@ import ExpenseTable from "../../components/expenses/ExpenseTable";
 import PageHeader from "../../components/layout/PageHeader";
 import { useExpenses } from "../../hooks/useExpenses";
 import { formatCurrency } from "../../utils/formatCurrency";
+import Pagination from "../../components/common/Pagination";
 
 export default function Expenses() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { expenses, filters, setFilters, resetFilters, loading, saving, error, refresh, createExpense, updateExpense, deleteExpense, deleteAllExpenses, summary } = useExpenses();
+  const { expenses, filters, setFilters, resetFilters, pagination, setPage, loading, saving, error, refresh, createExpense, updateExpense, deleteExpense, deleteAllExpenses, summary } = useExpenses();
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [deleteAllOpen, setDeleteAllOpen] = useState(false);
@@ -72,6 +73,7 @@ export default function Expenses() {
     <ExpenseFilters filters={filters} onChange={setFilters} onReset={resetFilters} />
     {error && <ErrorState message={error} onRetry={refresh} />}
     {!error && <ExpenseTable expenses={expenses} loading={loading} onEdit={setEditing} onDelete={setDeleting} />}
+    {!loading && !error && <Pagination pagination={pagination} onPageChange={setPage} />}
     <Modal isOpen={editing !== null} onClose={() => { setEditing(null); setFormError(""); }} title={editing ? "Edit expense" : "Add expense"} description="Changes are saved to your account.">
       {formError && <p role="alert" className="mb-4 rounded-lg border border-red-400/20 bg-red-400/[0.08] px-3 py-2.5 text-sm text-red-300">{formError}</p>}
       <ExpenseForm initialData={editing || null} onSubmit={save} onCancel={() => setEditing(null)} loading={saving} />

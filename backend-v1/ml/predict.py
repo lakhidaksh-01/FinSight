@@ -11,15 +11,17 @@ from forecasting.baseline import (
 
 from forecasting.linearRegression import (
     train_linear_regression,
-    predict_next
+    predict_next,
+    predict_sequence
 )
 
 from anomaly.isolationForest import (
     detect_anomalies
 )
+from forecasting.evaluate import evaluate_model
 
 
-def run_prediction(data):
+def run_prediction(data, horizon=3):
     """
     Main FinSight ML pipeline.
     """
@@ -31,6 +33,8 @@ def run_prediction(data):
             "success": False,
             "message": "Not enough financial data"
         }
+
+    horizon = max(1, min(12, int(horizon)))
 
     engineered_data = engineer_features(
         prepared_data
@@ -63,11 +67,50 @@ def run_prediction(data):
         features
     )
 
-    linear_prediction = predict_next(
+    linear_forecast = predict_sequence(
         model,
         engineered_data,
-        features
+        features,
+        horizon
     )
+
+    confidence = 45.0
+    trend = "stable"
+    if len(engineered_data) >= 3:
+        mean_amount = float(engineered_data["amount"].mean())
+        slope_values = engineered_data["amount"].tail(3).tolist()
+        if len(slope_values) >= 2:
+            slope = slope_values[-1] - slope_values[-2]
+            trend = "up" if slope > mean_amount * 0.05 else "down" if slope < -mean_amount * 0.05 else "stable"
+
+        actual = engineered_data["amount"].iloc[-1]
+        holdout_features = features
+        training = engineer_features(prepared_data.iloc[:-1])
+        holdout_model = train_linear_regression(training, holdout_features)
+        predicted = predict_next(holdout_model, training, holdout_features)
+        error = abs(float(actual) - float(predicted))
+        relative_error = error / max(float(actual), 1.0)
+        confidence = max(45.0, min(96.0, 96.0 - relative_error * 51.0))
+
+    evaluation = {"mae": 0.0, "rmse": 0.0}
+    if len(engineered_data) >= 4:
+        holdout_count = min(3, max(1, len(engineered_data) // 4))
+        training_data = engineered_data.iloc[:-holdout_count]
+        holdout_data = engineered_data.iloc[-holdout_count:]
+
+        evaluation_model = train_linear_regression(
+            training_data,
+            features
+        )
+
+        predicted_values = [
+            predict_next(evaluation_model, training_data, features)
+        ] * len(holdout_data)
+
+        evaluation = evaluate_model(
+            holdout_data["amount"].tolist(),
+            predicted_values
+        )
 
     anomaly_data = detect_anomalies(
         prepared_data
@@ -76,6 +119,14 @@ def run_prediction(data):
     anomaly_count = int(
         anomaly_data["anomaly"].sum()
     )
+
+    anomaly_records = []
+    for _, row in anomaly_data[anomaly_data["anomaly"]].iterrows():
+        anomaly_records.append({
+            "date": row["date"].isoformat(),
+            "amount": round(float(row["amount"]), 2),
+            "category": str(row["category"])
+        })
 
     return {
         "success": True,
@@ -88,14 +139,15 @@ def run_prediction(data):
                 moving_average_prediction,
                 2
             ),
-            "linearRegression": round(
-                linear_prediction,
-                2
-            )
+            "linearRegression": linear_forecast
         },
         "anomalies": {
-            "count": anomaly_count
+            "count": anomaly_count,
+            "records": anomaly_records
         },
+        "confidence": round(confidence, 2),
+        "trend": trend,
+        "evaluation": evaluation,
         "dataPoints": len(prepared_data)
     }
 
@@ -111,7 +163,14 @@ def main():
 
         data = json.loads(input_data)
 
-        result = run_prediction(data)
+        if isinstance(data, dict):
+            records = data.get("data", [])
+            horizon = data.get("horizon", 3)
+        else:
+            records = data
+            horizon = 3
+
+        result = run_prediction(records, horizon)
 
         print(
             json.dumps(

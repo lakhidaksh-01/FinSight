@@ -13,9 +13,7 @@
  *   DELETE /api/expenses
  *
  * Notes:
- * - the Expense schema has no `notes` field, so notes travel with the request
- *   (harmless, Mongoose ignores unknown paths) and are kept locally for the
- *   current session so the UI keeps showing what the user typed
+ * - expense notes are persisted by the Expense schema
  * - search and sorting are applied by the hook because the API only filters
  *   on category and date range
  */
@@ -23,12 +21,6 @@
 import api, { buildQuery, toApiDate, toRangeParams, unwrap } from "./api";
 
 const RESOURCE = "/expenses";
-
-/*
- * Expense documents keep their own notes in this WeakMap-free cache so the
- * table can render them until the backend persists the field.
- */
-const localNotes = new Map();
 
 const toApiPayload = ({ description, amount, category, date, notes }) => {
   const payload = {
@@ -63,7 +55,7 @@ const fromApiRecord = (record) => {
     ...record,
     id,
     amount: Number(record.amount) || 0,
-    notes: record.notes ?? localNotes.get(id) ?? "",
+    notes: record.notes ?? "",
     type: "expense",
   };
 };
@@ -79,11 +71,34 @@ export const expenseService = {
           ? filters.category
           : undefined,
       ...toRangeParams(filters),
+      search: filters.search,
     });
 
     const response = await api.get(RESOURCE, { params });
 
-    return (unwrap(response) || []).map(fromApiRecord);
+    const data = unwrap(response);
+    return (Array.isArray(data) ? data : data?.items || []).map(fromApiRecord);
+  },
+
+  async getPaginatedExpenses(filters = {}) {
+    const params = buildQuery({
+      category:
+        filters.category && filters.category !== "all"
+          ? filters.category
+          : undefined,
+      ...toRangeParams(filters),
+      search: filters.search,
+      page: filters.page,
+      limit: filters.limit,
+    });
+
+    const response = await api.get(RESOURCE, { params });
+    const data = unwrap(response);
+
+    return {
+      items: (Array.isArray(data) ? data : data?.items || []).map(fromApiRecord),
+      pagination: data?.pagination || null,
+    };
   },
 
   async getExpense(id) {
@@ -96,10 +111,6 @@ export const expenseService = {
     const response = await api.post(RESOURCE, toApiPayload(payload));
     const record = unwrap(response);
 
-    if (record?._id && payload.notes) {
-      localNotes.set(record._id, String(payload.notes).trim());
-    }
-
     return fromApiRecord(record);
   },
 
@@ -107,24 +118,16 @@ export const expenseService = {
     const response = await api.put(`${RESOURCE}/${id}`, toApiPayload(payload));
     const record = unwrap(response);
 
-    if (payload.notes !== undefined) {
-      localNotes.set(id, String(payload.notes).trim());
-    }
-
     return fromApiRecord(record);
   },
 
   async deleteExpense(id) {
-    localNotes.delete(id);
-
     const response = await api.delete(`${RESOURCE}/${id}`);
 
     return unwrap(response) || { deleted: true, id };
   },
 
   async deleteAllExpenses() {
-    localNotes.clear();
-
     const response = await api.delete(RESOURCE);
 
     return unwrap(response) || { deleted: true };

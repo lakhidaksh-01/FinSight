@@ -60,11 +60,36 @@ export const incomeService = {
             ? filters.category
             : undefined,
       ...toRangeParams(filters),
+      search: filters.search,
     });
 
     const response = await api.get(RESOURCE, { params });
 
-    return (unwrap(response) || []).map(fromApiRecord);
+    const data = unwrap(response);
+    return (Array.isArray(data) ? data : data?.items || []).map(fromApiRecord);
+  },
+
+  async getPaginatedIncomes(filters = {}) {
+    const params = buildQuery({
+      category:
+        filters.source && filters.source !== "all"
+          ? filters.source
+          : filters.category && filters.category !== "all"
+            ? filters.category
+            : undefined,
+      ...toRangeParams(filters),
+      search: filters.search,
+      page: filters.page,
+      limit: filters.limit,
+    });
+
+    const response = await api.get(RESOURCE, { params });
+    const data = unwrap(response);
+
+    return {
+      items: (Array.isArray(data) ? data : data?.items || []).map(fromApiRecord),
+      pagination: data?.pagination || null,
+    };
   },
 
   async getIncome(id) {

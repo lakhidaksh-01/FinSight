@@ -12,8 +12,7 @@
  *   same value `targetDate`
  * - `targetDate` is required by the API while the form leaves it optional, so
  *   an empty deadline becomes a 12 month horizon rather than a rejected request
- * - the Goal schema has no `category` field, so the chosen category is kept in
- *   a session cache and the components fall back to "Savings" when it is gone
+ * - category is persisted on the Goal document
  */
 
 import api, { toApiDate, unwrap } from "./api";
@@ -21,11 +20,6 @@ import api, { toApiDate, unwrap } from "./api";
 const RESOURCE = "/goals";
 
 const DEFAULT_HORIZON_MONTHS = 12;
-
-/*
- * UI-only fields that the API does not persist.
- */
-const localCategories = new Map();
 
 const defaultTargetDate = () => {
   const date = new Date();
@@ -81,7 +75,7 @@ const fromApiRecord = (record) => {
     targetAmount: Number(record.targetAmount) || 0,
     currentAmount: Number(record.currentAmount) || 0,
     deadline: record.targetDate || record.deadline || null,
-    category: record.category || localCategories.get(id) || "Savings",
+    category: record.category || "Savings",
   };
 };
 
@@ -89,7 +83,8 @@ export const goalService = {
   async getGoals() {
     const response = await api.get(RESOURCE);
 
-    return (unwrap(response) || []).map(fromApiRecord);
+    const data = unwrap(response);
+    return (Array.isArray(data) ? data : data?.items || []).map(fromApiRecord);
   },
 
   async getGoal(id) {
@@ -102,19 +97,11 @@ export const goalService = {
     const response = await api.post(RESOURCE, toApiPayload(payload));
     const record = unwrap(response);
 
-    if (record?._id && payload.category) {
-      localCategories.set(record._id, payload.category);
-    }
-
     return fromApiRecord(record);
   },
 
   async updateGoal(id, payload) {
     const response = await api.put(`${RESOURCE}/${id}`, toApiPayload(payload));
-
-    if (payload.category) {
-      localCategories.set(id, payload.category);
-    }
 
     return fromApiRecord(unwrap(response));
   },
@@ -140,8 +127,6 @@ export const goalService = {
   },
 
   async deleteGoal(id) {
-    localCategories.delete(id);
-
     const response = await api.delete(`${RESOURCE}/${id}`);
 
     return unwrap(response) || { deleted: true, id };

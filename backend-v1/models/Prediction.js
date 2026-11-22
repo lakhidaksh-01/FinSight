@@ -11,7 +11,8 @@ const predictionSchema = new mongoose.Schema(
     predictionType: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
+      enum: ["expense_forecast", "monthly_savings", "category_spending"]
     },
 
     predictedAmount: {
@@ -48,6 +49,7 @@ const predictionSchema = new mongoose.Schema(
 );
 
 predictionSchema.index({ user: 1, createdAt: -1 });
+predictionSchema.index({ user: 1, predictionType: 1, createdAt: -1 });
 
 const Prediction = mongoose.model(
   "Prediction",

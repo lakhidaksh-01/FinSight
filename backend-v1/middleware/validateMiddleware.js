@@ -1,4 +1,10 @@
-import { validationResult } from "express-validator";
+import { param, validationResult } from "express-validator";
+
+export const validateObjectIdParam = [
+  param("id")
+    .isMongoId()
+    .withMessage("Invalid resource ID")
+];
 
 export const validate = (req, res, next) => {
   const errors = validationResult(req);

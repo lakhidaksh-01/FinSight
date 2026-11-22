@@ -95,13 +95,6 @@ export const PREDICTION_PERIODS = [
 
 export const DEFAULT_PREDICTION_MONTHS = 3;
 
-export const PREDICTION_TYPES = {
-  MONTHLY_SPENDING: "monthly_spending",
-  MONTHLY_SAVINGS: "monthly_savings",
-};
-
-export const PREDICTION_MODEL_LABEL = "FinSight Trend Engine";
-
 /*
  * Budget warning thresholds (mirrored by BudgetWarnings.jsx).
  */

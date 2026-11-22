@@ -35,7 +35,8 @@ export const getAllExpenses = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: expenses
+      data: expenses,
+      ...(expenses?.pagination ? { pagination: expenses.pagination } : {})
     });
   } catch (error) {
     next(error);

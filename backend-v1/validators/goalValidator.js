@@ -8,6 +8,12 @@ export const createGoalValidator = [
     .isLength({ max: 100 })
     .withMessage("Goal name cannot exceed 100 characters"),
 
+  body("category")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Category cannot exceed 100 characters"),
+
   body("targetAmount")
     .notEmpty()
     .withMessage("Target amount is required")
@@ -42,6 +48,12 @@ export const updateGoalValidator = [
     .withMessage("Goal name cannot be empty")
     .isLength({ max: 100 })
     .withMessage("Goal name cannot exceed 100 characters"),
+
+  body("category")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Category cannot exceed 100 characters"),
 
   body("targetAmount")
     .optional()

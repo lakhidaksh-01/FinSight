@@ -11,7 +11,7 @@ const incomeSchema = new mongoose.Schema(
     amount: {
       type: Number,
       required: true,
-      min: 0
+      min: 0.01
     },
 
     category: {
@@ -39,6 +39,8 @@ const incomeSchema = new mongoose.Schema(
 
 incomeSchema.index({ user: 1, date: -1 });
 incomeSchema.index({ user: 1, category: 1 });
+incomeSchema.index({ user: 1, date: -1, category: 1 });
+incomeSchema.index({ user: 1, description: "text", category: "text" });
 
 const Income = mongoose.model("Income", incomeSchema);
 

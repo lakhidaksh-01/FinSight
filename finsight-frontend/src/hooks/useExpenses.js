@@ -46,6 +46,8 @@ export function useExpenses(initialFilters = {}) {
     ...initialFilters,
   });
   const [records, setRecords] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [page, setPage] = useState(initialFilters.page || 1);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -57,8 +59,11 @@ export function useExpenses(initialFilters = {}) {
    */
   const queryKey = JSON.stringify({
     category: filters.category,
+    search: filters.search,
     dateFrom: filters.dateFrom,
     dateTo: filters.dateTo,
+    page,
+    limit: 20,
   });
 
   useEffect(() => {
@@ -70,13 +75,14 @@ export function useExpenses(initialFilters = {}) {
     setError(null);
 
     expenseService
-      .getExpenses(JSON.parse(queryKey))
-      .then((data) => {
+      .getPaginatedExpenses(JSON.parse(queryKey))
+      .then((result) => {
         if (!active || requestId.current !== currentRequest) {
           return;
         }
 
-        setRecords(data);
+        setRecords(result.items);
+        setPagination(result.pagination);
       })
       .catch((loadError) => {
         if (!active || requestId.current !== currentRequest) {
@@ -98,6 +104,10 @@ export function useExpenses(initialFilters = {}) {
       active = false;
     };
   }, [queryKey, version]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filters.category, filters.search, filters.dateFrom, filters.dateTo]);
 
   const expenses = useMemo(
     () =>
@@ -200,6 +210,8 @@ export function useExpenses(initialFilters = {}) {
     setFilters,
     setFilter,
     resetFilters,
+    pagination,
+    setPage,
     loading,
     saving,
     error,

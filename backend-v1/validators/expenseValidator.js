@@ -22,6 +22,12 @@ export const createExpenseValidator = [
       "Description cannot exceed 500 characters"
     ),
 
+  body("notes")
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage("Notes cannot exceed 1000 characters"),
+
   body("date")
     .optional()
     .isISO8601()
@@ -49,6 +55,12 @@ export const updateExpenseValidator = [
     .withMessage(
       "Description cannot exceed 500 characters"
     ),
+
+  body("notes")
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage("Notes cannot exceed 1000 characters"),
 
   body("date")
     .optional()
