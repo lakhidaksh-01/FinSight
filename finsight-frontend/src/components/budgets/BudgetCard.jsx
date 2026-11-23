@@ -89,10 +89,10 @@ function BudgetCard({ budget, onEdit, onDelete }) {
         )}
 
         <div className="mt-5 flex justify-end gap-2">
-          <Button variant="outline" size="small" icon={<Pencil size={14} />} onClick={() => onEdit?.(budget)}>
+          <Button variant="outline" size="small" icon={Pencil} onClick={() => onEdit?.(budget)}>
             Edit
           </Button>
-          <Button variant="ghost" size="small" icon={<Trash2 size={14} />} onClick={() => onDelete?.(budget)} className="text-[var(--danger)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]">
+          <Button variant="ghost" size="small" icon={Trash2} onClick={() => onDelete?.(budget)} className="text-[var(--danger)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]">
             Delete
           </Button>
         </div>

@@ -46,8 +46,8 @@ function IncomeCard({ income, onEdit, onDelete }) {
       </div>
 
       <div className="mt-5 flex justify-end gap-2 border-t border-[var(--border-subtle)] pt-4">
-        <Button variant="outline" size="small" icon={<Pencil size={14} />} onClick={() => onEdit?.(income)}>Edit</Button>
-        <Button variant="ghost" size="small" icon={<Trash2 size={14} />} onClick={() => onDelete?.(income)} className="text-[var(--danger)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]">Delete</Button>
+        <Button variant="outline" size="small" icon={Pencil} onClick={() => onEdit?.(income)}>Edit</Button>
+        <Button variant="ghost" size="small" icon={Trash2} onClick={() => onDelete?.(income)} className="text-[var(--danger)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]">Delete</Button>
       </div>
     </div>
   );
