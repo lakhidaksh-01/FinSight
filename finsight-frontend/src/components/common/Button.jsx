@@ -27,7 +27,7 @@ function Button({
 
   const variants = {
     primary:
-      "bg-[var(--accent)] text-white shadow-[var(--shadow-sm)] hover:bg-[var(--accent-strong)] focus-visible:ring-[var(--accent)]",
+      "bg-[var(--accent)] text-[var(--text-on-accent)] shadow-[var(--shadow-sm)] hover:bg-[var(--accent-strong)] focus-visible:ring-[var(--accent)]",
     secondary:
       "bg-[var(--surface-raised)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:bg-[var(--border-subtle)] hover:text-[var(--text-primary)] focus-visible:ring-[var(--accent)]",
     outline:
@@ -35,7 +35,7 @@ function Button({
     ghost:
       "text-[var(--text-muted)] bg-transparent hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)] focus-visible:ring-[var(--accent)]",
     danger:
-      "bg-[var(--danger)] text-white shadow-[var(--shadow-sm)] hover:bg-[#dc2626] focus-visible:ring-[var(--danger)]",
+      "bg-[var(--danger)] text-[var(--text-on-danger)] shadow-[var(--shadow-sm)] hover:bg-[var(--danger-strong)] focus-visible:ring-[var(--danger)]",
   };
 
   const sizes = {

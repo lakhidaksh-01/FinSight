@@ -80,6 +80,10 @@ select {
   background-color: var(--surface) !important;
 }
 
+[class~="bg-[var(--gradient-primary)]"] {
+  background-image: var(--gradient-primary) !important;
+}
+
 [class~="bg-[#9bd3a9]"],
 [class~="bg-[#75ad85]"] {
   background-color: var(--accent) !important;
