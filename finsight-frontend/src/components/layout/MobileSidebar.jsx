@@ -64,8 +64,8 @@ function MobileSidebar({ isOpen, onClose }) {
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-4 py-6">
-          <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Navigation</p>
+        <nav aria-label="Primary navigation" className="flex-1 overflow-y-auto px-4 py-6">
+          <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Navigation</p>
           <div className="space-y-1">
             {navigation.map((item) => {
               const Icon = item.icon;
@@ -74,16 +74,23 @@ function MobileSidebar({ isOpen, onClose }) {
                   key={item.path}
                   to={item.path}
                   onClick={onClose}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium transition-all ${
-                      isActive
-                        ? "bg-[var(--accent-soft)] text-[var(--text-primary)] ring-1 ring-[var(--accent)]/20"
-                        : "text-[var(--text-muted)] hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)]"
-                    }`
-                  }
+                  className={({ isActive }) => `group relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm transition-all ${
+                    isActive
+                      ? "bg-[var(--accent-soft)] font-semibold text-[var(--accent)] ring-1 ring-[var(--accent)]/15"
+                      : "font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)]"
+                  }`}
                 >
-                  <Icon size={19} strokeWidth={1.8} />
-                  <span>{item.label}</span>
+                  {({ isActive }) => (
+                    <>
+                      <span className={`absolute left-0 h-5 w-0.5 rounded-r-full bg-[var(--accent)] transition-opacity ${isActive ? "opacity-100" : "opacity-0"}`} />
+                      <Icon
+                        size={18}
+                        strokeWidth={1.8}
+                        className={isActive ? "text-[var(--accent)]" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"}
+                      />
+                      <span>{item.label}</span>
+                    </>
+                  )}
                 </NavLink>
               );
             })}
@@ -91,7 +98,7 @@ function MobileSidebar({ isOpen, onClose }) {
         </nav>
 
         <div className="border-t border-[var(--border-subtle)] p-4">
-          <div className="flex items-center gap-3 rounded-xl bg-[var(--surface-raised)] p-3">
+          <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-raised)]/70 p-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--gradient-primary)] text-[var(--text-inverse)] text-sm font-bold shadow-lg shadow-[var(--accent)]/20">
               {(user?.name || user?.email || "F").slice(0, 1).toUpperCase()}
             </div>
