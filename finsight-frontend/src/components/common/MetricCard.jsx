@@ -29,22 +29,22 @@ export default function MetricCard({
   const toneStyle = tones[tone] || tones.primary;
 
   return (
-    <article className="group relative overflow-hidden rounded-3xl border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)] transition-all duration-200 hover:shadow-[var(--shadow-md)] hover:border-[var(--border-strong)] hover:-translate-y-1 sm:p-6">
+    <article className="group relative overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface)] p-4 shadow-[var(--shadow-sm)] transition-all duration-200 hover:shadow-[var(--shadow-md)] hover:border-[var(--border-strong)] sm:p-5">
       {Icon && (
-        <div className={`mb-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${toneStyle.icon}`}>
-          <Icon size={18} strokeWidth={2} />
+        <div className={`mb-2.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${toneStyle.icon}`}>
+          <Icon size={17} strokeWidth={2} />
         </div>
       )}
       <div className="min-w-0">
         <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
           {label}
         </p>
-        <p className="mt-1.5 text-2xl font-bold tracking-tight text-[var(--text-primary)] numeric sm:text-3xl">
+        <p className="mt-1 text-2xl font-bold tracking-tight text-[var(--text-primary)] numeric">
           {value}
         </p>
       </div>
       {detail && (
-        <p className="mt-2.5 text-sm text-[var(--text-secondary)]">{detail}</p>
+        <p className="mt-2 text-xs text-[var(--text-secondary)]">{detail}</p>
       )}
     </article>
   );

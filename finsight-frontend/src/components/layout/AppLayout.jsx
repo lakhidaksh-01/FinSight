@@ -31,7 +31,7 @@ function AppLayout() {
 
       <MobileSidebar isOpen={isMobileSidebarOpen} onClose={closeMobileSidebar} />
 
-      <div className="min-h-screen lg:ml-72">
+      <div className="min-h-screen lg:ml-64">
         <Topbar onMenuClick={openMobileSidebar} />
 
         <motion.main
@@ -39,9 +39,9 @@ function AppLayout() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 10 }}
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="px-4 pb-10 pt-8 sm:px-6 lg:px-8"
+          className="px-4 pb-8 pt-6 sm:px-6 lg:px-7"
         >
-          <div className="mx-auto w-full max-w-[1560px]">
+          <div className="mx-auto w-full max-w-[1480px]">
             <Outlet />
           </div>
         </motion.main>

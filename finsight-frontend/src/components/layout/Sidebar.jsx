@@ -79,8 +79,8 @@ function Sidebar() {
     });
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-[var(--border-subtle)] bg-[var(--surface)]/80 backdrop-blur-xl lg:flex lg:flex-col">
-      <div className="flex h-20 items-center border-b border-[var(--border-subtle)] px-6 bg-[var(--surface)]/95 backdrop-blur-md sticky top-0 z-10">
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-[var(--border-subtle)] bg-[var(--surface)] lg:flex lg:flex-col">
+      <div className="sticky top-0 z-10 flex h-16 items-center border-b border-[var(--border-subtle)] bg-[var(--surface)] px-5">
         <NavLink to="/app/dashboard" className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--gradient-primary)] text-[var(--text-inverse)] shadow-lg shadow-[var(--accent)]/20">
             <Wallet size={21} strokeWidth={2.2} />
@@ -92,18 +92,18 @@ function Sidebar() {
         </NavLink>
       </div>
 
-      <nav aria-label="Primary navigation" className="flex-1 overflow-y-auto px-4 py-6">
+      <nav aria-label="Primary navigation" className="flex-1 overflow-y-auto px-3 py-5">
         <div>
           <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Overview</p>
           <div className="space-y-1">{renderNavigation(mainNavigation)}</div>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-6">
           <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Intelligence</p>
           <div className="space-y-1">{renderNavigation(intelligenceNavigation)}</div>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-6">
           <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Account</p>
           <div className="space-y-1">{renderNavigation(accountNavigation)}</div>
         </div>

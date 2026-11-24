@@ -2,6 +2,7 @@
 @import "./styles/index.css";
 
 :root {
+  font-size: 15px;
   font-family: Inter, "Segoe UI", "Avenir Next", system-ui, -apple-system, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -21,9 +22,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
-  background:
-    radial-gradient(ellipse at 80% -15%, rgb(98 84 189 / 7%), transparent 43%),
-    var(--canvas);
+  background: var(--canvas);
 }
 
 html {
@@ -313,12 +312,10 @@ select {
   border-color: var(--border-subtle) !important;
 }
 
-/* Typography and cards */
+/* Compact, neutral surfaces keep dense finance pages easy to scan. */
 body {
-  letter-spacing: -0.01em;
-  background:
-    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 26rem),
-    var(--canvas) !important;
+  letter-spacing: 0;
+  background: var(--canvas) !important;
 }
 
 h1,
@@ -326,12 +323,15 @@ h2,
 h3,
 .font-bold,
 .font-semibold {
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
 }
 
-.rounded-2xl,
-.rounded-\[20px\] {
-  box-shadow: var(--shadow-sm);
+.rounded-3xl {
+  border-radius: var(--radius-xl) !important;
+}
+
+.rounded-2xl {
+  border-radius: var(--radius-lg) !important;
 }
 
 [class*="border-slate-"],
@@ -365,6 +365,18 @@ select {
 ::placeholder {
   color: var(--text-muted) !important;
   opacity: 0.78;
+}
+
+table {
+  font-size: 0.875rem;
+}
+
+table th {
+  color: var(--text-secondary);
+}
+
+table tbody tr:last-child {
+  border-bottom-width: 0;
 }
 
 .recharts-cartesian-grid line {

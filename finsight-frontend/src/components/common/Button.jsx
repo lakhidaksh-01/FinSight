@@ -23,7 +23,7 @@ function Button({
   ...props
 }) {
   const base =
-    "inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-60";
+    "inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-60";
 
   const variants = {
     primary:
@@ -39,9 +39,9 @@ function Button({
   };
 
   const sizes = {
-    small: "h-9 px-3.5 text-xs",
-    medium: "h-11 px-4.5 text-sm",
-    large: "h-12 px-6 text-sm",
+    small: "h-9 px-3 text-xs",
+    medium: "h-10 px-4 text-sm",
+    large: "h-11 px-5 text-sm",
   };
 
   const isDisabled = disabled || loading;
