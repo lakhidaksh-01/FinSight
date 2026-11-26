@@ -88,7 +88,7 @@ export const updateGoal = async (
     },
     updates,
     {
-      new: true,
+      returnDocument: "after",
       runValidators: true
     }
   );

@@ -9,7 +9,7 @@ export const getPagination = (query = {}) => {
   };
 };
 
-export const buildPaginatedResult = (items, total, pagination) => ({
+export const buildPaginatedResult = (items, total, pagination, summary) => ({
   items,
   pagination: {
     page: pagination.page,
@@ -17,4 +17,5 @@ export const buildPaginatedResult = (items, total, pagination) => ({
     total,
     pages: Math.ceil(total / pagination.limit),
   },
+  ...(summary ? { summary } : {}),
 });

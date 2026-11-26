@@ -9,29 +9,12 @@
  *     createExpense, updateExpense, deleteExpense, summary,
  *   } = useExpenses();
  *
- * Division of labour
- *   - category and the date range are sent to GET /api/expenses, because the
- *     API filters on them
- *   - text search and sorting are applied locally, because the API has no
- *     search or order parameter, and applying them locally keeps typing
- *     instant instead of firing a request per keystroke
- *   - every mutation refreshes the list, so the numbers shown on screen always
- *     come back from the server
+ * Search, sorting, pagination and the matching-set summary are handled by the
+ * API so the displayed rows and all summary numbers use the same result set.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { expenseService } from "../services/expenseService";
-import {
-  groupByCategory,
-  searchRecords,
-  sortRecords,
-  sumAmount,
-  topCategory,
-} from "../utils/calculations";
-import { isSameMonth } from "../utils/formatDate";
-
-const SEARCH_FIELDS = ["description", "category", "notes", "amount"];
-
 const DEFAULT_FILTERS = {
   search: "",
   category: "all",
@@ -46,6 +29,7 @@ export function useExpenses(initialFilters = {}) {
     ...initialFilters,
   });
   const [records, setRecords] = useState([]);
+  const [aggregateSummary, setAggregateSummary] = useState(null);
   const [pagination, setPagination] = useState(null);
   const [page, setPage] = useState(initialFilters.page || 1);
   const [loading, setLoading] = useState(true);
@@ -55,11 +39,12 @@ export function useExpenses(initialFilters = {}) {
   const requestId = useRef(0);
 
   /*
-   * Only server-side filters re-request; search and sort stay client side.
+   * Search and sort are part of the server query so pagination is consistent.
    */
   const queryKey = JSON.stringify({
     category: filters.category,
     search: filters.search,
+    sort: filters.sort,
     dateFrom: filters.dateFrom,
     dateTo: filters.dateTo,
     page,
@@ -83,6 +68,7 @@ export function useExpenses(initialFilters = {}) {
 
         setRecords(result.items);
         setPagination(result.pagination);
+        setAggregateSummary(result.summary);
       })
       .catch((loadError) => {
         if (!active || requestId.current !== currentRequest) {
@@ -90,6 +76,8 @@ export function useExpenses(initialFilters = {}) {
         }
 
         setRecords([]);
+        setPagination(null);
+        setAggregateSummary(null);
         setError(
           loadError?.message || "Unable to load your expenses right now."
         );
@@ -109,34 +97,16 @@ export function useExpenses(initialFilters = {}) {
     setPage(1);
   }, [filters.category, filters.search, filters.dateFrom, filters.dateTo]);
 
-  const expenses = useMemo(
-    () =>
-      sortRecords(
-        searchRecords(records, filters.search, SEARCH_FIELDS),
-        filters.sort
-      ),
-    [records, filters.search, filters.sort]
-  );
-
-  const summary = useMemo(() => {
-    const total = sumAmount(expenses);
-    const largest = expenses.reduce(
-      (best, item) => (!best || Number(item.amount) > Number(best.amount) ? item : best),
-      null
-    );
-
-    return {
-      total,
-      count: expenses.length,
-      average: expenses.length ? total / expenses.length : 0,
-      largest,
-      thisMonth: sumAmount(
-        records.filter((item) => isSameMonth(item.date || item.createdAt))
-      ),
-      categories: groupByCategory(expenses),
-      topCategory: topCategory(expenses),
-    };
-  }, [expenses, records]);
+  const expenses = records;
+  const summary = aggregateSummary || {
+    total: 0,
+    count: 0,
+    average: 0,
+    largest: null,
+    thisMonth: 0,
+    categories: [],
+    topCategory: null,
+  };
 
   const setFilter = useCallback((key, value) => {
     setFilters((previous) => ({ ...previous, [key]: value }));

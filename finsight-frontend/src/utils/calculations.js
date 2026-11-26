@@ -8,7 +8,7 @@
  * here from the expense and income records the API already returns.
  */
 
-import { parseDate, toMonthKey } from "./formatDate";
+import { parseDate, toMonthKey } from "./formatDate.js";
 
 /*
  * Totals
@@ -107,6 +107,35 @@ export const getRollingRange = (months = 6, reference = new Date()) => {
   return {
     startDate,
     endDate,
+  };
+};
+
+export const getComparableMonthRanges = (reference = new Date()) => {
+  const current = parseDate(reference) || new Date();
+  const previousMonthDays = new Date(
+    current.getFullYear(),
+    current.getMonth(),
+    0
+  ).getDate();
+  const previousEndDay = Math.min(current.getDate(), previousMonthDays);
+
+  return {
+    current: {
+      startDate: new Date(current.getFullYear(), current.getMonth(), 1),
+      endDate: current,
+    },
+    previous: {
+      startDate: new Date(current.getFullYear(), current.getMonth() - 1, 1),
+      endDate: new Date(
+        current.getFullYear(),
+        current.getMonth() - 1,
+        previousEndDay,
+        current.getHours(),
+        current.getMinutes(),
+        current.getSeconds(),
+        current.getMilliseconds()
+      ),
+    },
   };
 };
 
@@ -435,6 +464,58 @@ export const withBudgetProgress = (
     };
   });
 
+export const calculateBudgetTotals = (budgets = []) => {
+  const totalBudgeted = sumAmount(
+    budgets.map((budget) => ({ amount: budget?.amount }))
+  );
+  const totalSpent = sumAmount(
+    budgets.map((budget) => ({ amount: budget?.spent }))
+  );
+  const totalRemaining = (budgets || []).reduce((total, budget) => {
+    const amount = Number(budget?.amount) || 0;
+    const spent = Number(budget?.spent) || 0;
+
+    return total + Math.max(amount - spent, 0);
+  }, 0);
+
+  return {
+    totalBudgeted,
+    totalSpent,
+    totalRemaining,
+    utilization:
+      totalBudgeted > 0
+        ? Number(((totalSpent / totalBudgeted) * 100).toFixed(1))
+        : 0,
+  };
+};
+
+export const calculateGoalTotals = (goals = []) => {
+  const target = sumBy(goals, "targetAmount");
+  const saved = sumBy(goals, "currentAmount");
+  const progressAmount = (goals || []).reduce((total, goal) => {
+    const goalTarget = Math.max(Number(goal?.targetAmount) || 0, 0);
+    const goalSaved = Math.max(Number(goal?.currentAmount) || 0, 0);
+
+    return total + Math.min(goalSaved, goalTarget);
+  }, 0);
+  const remaining = (goals || []).reduce((total, goal) => {
+    const goalTarget = Math.max(Number(goal?.targetAmount) || 0, 0);
+    const goalSaved = Math.max(Number(goal?.currentAmount) || 0, 0);
+
+    return total + Math.max(goalTarget - goalSaved, 0);
+  }, 0);
+
+  return {
+    target,
+    saved,
+    progressAmount,
+    remaining,
+    progress: target > 0
+      ? Number(Math.min((progressAmount / target) * 100, 100).toFixed(1))
+      : 0,
+  };
+};
+
 /*
  * Financial health score
  */
@@ -507,15 +588,8 @@ export const calculateFinancialHealth = ({
   }
 
   // Goal momentum (max 15)
-  const goalTarget = sumBy(
-    goals,
-    "targetAmount"
-  );
-
-  const goalSaved = sumBy(
-    goals,
-    "currentAmount"
-  );
+  const { target: goalTarget, progressAmount: goalSaved } =
+    calculateGoalTotals(goals);
 
   if (goalTarget > 0) {
     score += Math.round(
@@ -524,11 +598,9 @@ export const calculateFinancialHealth = ({
         1
       ) * 15
     );
-  } else if ((goals || []).length) {
-    score += 6;
   }
 
-  // Consistency of recording (max 10)
+  // Recorded financial activity (max 10); transaction volume is not cadence.
   if (transactionCount >= 40) score += 10;
   else if (transactionCount >= 15) score += 8;
   else if (transactionCount >= 5) score += 5;

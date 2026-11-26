@@ -1,8 +1,8 @@
 # FinSight — ML-Assisted Personal Finance System
 
-FinSight is a full-stack personal finance management system designed to help users track income and expenses, manage budgets and financial goals, analyze spending patterns, and receive machine-learning-assisted financial insights.
+FinSight is a full-stack personal finance management system designed to help users track income and expenses, manage budgets and financial goals, analyze spending patterns, and receive explainable insights and machine-learning forecasts.
 
-The system combines a modern React frontend with a Node.js/Express backend, MongoDB for data storage, JWT-based authentication, and Python-based machine learning components for financial predictions and risk analysis.
+The system combines a React frontend with a Node.js/Express backend, MongoDB for data storage, JWT-based authentication, rule-based financial insights, and Python-based forecasting and anomaly detection.
 
 ## 🚀 Live Demo
 
@@ -72,25 +72,18 @@ https://finsight-simh.onrender.com/
 
 ### 🤖 ML-Assisted Predictions
 
-FinSight includes machine-learning components for financial analysis and prediction.
+Python models generate monthly expense forecasts and detect unusual monthly expense totals.
 
-The prediction system is designed to support:
+Forecast history and the model/evaluation metadata are available in the Predictions module. Risk assessments and Quick Insights use explainable financial rules rather than an AI model.
 
-* Financial forecasting
-* Spending trend analysis
-* Risk assessment
-* Anomaly detection
-* Prediction history
+### 💡 Rule-Based Financial Insights
 
-### 🧠 AI Financial Insights
+The system derives insights from recorded user data, including:
 
-The system provides financial insights based on user data, including:
-
-* Spending risk indicators
-* Unusual spending detection
-* Financial behavior analysis
-* Budget-related insights
-* Actionable financial recommendations
+* Savings-rate and cash-flow observations
+* Transaction and monthly spending anomaly flags
+* Budget status and goal progress
+* Contextual recommendations
 
 ---
 
@@ -169,8 +162,8 @@ The system provides financial insights based on user data, including:
                        ▼                            ▼
               ┌──────────────────┐        ┌──────────────────┐
               │   MongoDB Atlas  │        │ Python ML Layer  │
-              │     Database     │        │ Predictions &    │
-              │                  │        │ Financial Risk   │
+              │     Database     │        │ Forecasting &    │
+              │                  │        │ Anomaly Detection│
               └──────────────────┘        └──────────────────┘
 ```
 
@@ -340,6 +333,12 @@ Install dependencies:
 npm install
 ```
 
+Install the Python ML dependencies (Python 3 must be available):
+
+```bash
+python -m pip install -r requirements.txt
+```
+
 Create a `.env` file:
 
 ```env
@@ -420,14 +419,25 @@ http://localhost:5000
 
 ### Backend
 
-The following environment variables are required:
+Required:
+
+```text
+MONGO_URI
+JWT_SECRET
+```
+
+Optional:
 
 ```text
 NODE_ENV
 PORT
-MONGO_URI
-JWT_SECRET
 PYTHON_PATH
+FRONTEND_URL
+```
+
+Password-reset email delivery also requires:
+
+```text
 SMTP_HOST
 SMTP_PORT
 SMTP_USER
@@ -488,6 +498,10 @@ Production API:
 
 https://finsight-simh.onrender.com/
 
+For a Render deployment, set the service root directory to `backend-v1`, install the Node.js dependencies and Python packages from `requirements.txt`, and use `npm start` as the start command. Configure the required backend environment variables and the SMTP settings if password-reset email is enabled. Set `PYTHON_PATH` when the Python executable is not available as `python`.
+
+For Vercel, set the project root to `finsight-frontend`, use `npm run build`, and use `dist` as the output directory. Set `VITE_API_BASE_URL` to the deployed backend API URL ending in `/api`.
+
 ### Database
 
 FinSight uses MongoDB Atlas for cloud database storage.
@@ -526,7 +540,7 @@ The application is organized around the following major modules:
 | Budgets     | Monitor spending limits                |
 | Analytics   | Analyze financial behavior             |
 | Predictions | View ML-assisted forecasts             |
-| AI Insights | Identify financial risks and anomalies |
+| Quick Insights | View rule-based observations and risk indicators |
 | Goals       | Track financial targets                |
 | Profile     | Manage account and preferences         |
 
@@ -550,17 +564,14 @@ Prediction / Forecasting
         │
         ├───────────────┐
         ▼               ▼
-Trend Analysis    Anomaly Detection
+      Monthly Forecast   Anomaly Detection
         │               │
         └───────┬───────┘
                 ▼
-        Financial Risk Analysis
-                │
-                ▼
-          User Insights
+     Saved Prediction Results
 ```
 
-The ML components are designed to transform historical financial data into useful predictions and financial insights.
+Risk assessments and Quick Insights are calculated separately using explicit application rules; they are not Python model outputs.
 
 ---
 

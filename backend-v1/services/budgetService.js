@@ -92,7 +92,7 @@ export const updateBudget = async (
     },
     updates,
     {
-      new: true,
+      returnDocument: "after",
       runValidators: true
     }
   );

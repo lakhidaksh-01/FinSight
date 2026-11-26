@@ -2,13 +2,11 @@
 import { Link } from "react-router-dom";
 import ErrorState from "../../components/common/ErrorState";
 import MetricCard from "../../components/common/MetricCard";
-import BalanceCard from "../../components/dashboard/BalanceCard";
 import BudgetOverview from "../../components/dashboard/BudgetOverview";
 import FinancialHealthCard from "../../components/dashboard/FinancialHealthCard";
 import QuickActions from "../../components/dashboard/QuickActions";
 import QuickInsights from "../../components/dashboard/QuickInsights";
 import RecentTransactions from "../../components/dashboard/RecentTransactions";
-import SavingsOverview from "../../components/dashboard/SavingsOverview";
 import PageHeader from "../../components/layout/PageHeader";
 import Breadcrumbs from "../../components/layout/Breadcrumbs";
 import { useAnalytics } from "../../hooks/useAnalytics";
@@ -93,12 +91,6 @@ export default function Dashboard() {
         ))}
       </motion.div>
 
-      <BalanceCard
-        balance={summary.totalIncome - summary.totalExpenses}
-        income={summary.totalIncome}
-        expenses={summary.totalExpenses}
-      />
-
       {loading && (
         <p className="text-sm text-[var(--text-muted)]">Refreshing your financial overview…</p>
       )}
@@ -176,11 +168,6 @@ export default function Dashboard() {
         <BudgetOverview budgets={budgets} />
         <QuickInsights insights={quickInsights} />
       </div>
-
-      <SavingsOverview
-        totalSavings={summary.totalIncome - summary.totalExpenses}
-        savingsRate={summary.savingsRate}
-      />
 
       <QuickActions />
       <RecentTransactions transactions={transactions} />

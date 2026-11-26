@@ -29,7 +29,7 @@ function PredictionCard({ prediction, title = "Financial Prediction" }) {
   }
 
   const predictedAmount = Number(prediction.predictedAmount ?? prediction.amount ?? prediction.value ?? 0);
-  const confidence = Number(prediction.confidence || 0);
+  const fitScore = prediction.metadata?.fitScore;
   const trend = prediction.trend || "stable";
 
   const TrendIcon =
@@ -57,7 +57,7 @@ function PredictionCard({ prediction, title = "Financial Prediction" }) {
               <BrainCircuit size={20} />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">AI Prediction</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">ML Forecast</p>
               <h3 className="mt-1 font-semibold tracking-tight text-[var(--text-primary)]">{title}</h3>
             </div>
           </div>
@@ -76,16 +76,16 @@ function PredictionCard({ prediction, title = "Financial Prediction" }) {
           <p className="mt-2 text-sm text-[var(--text-muted)]">Forecast for {prediction.period}</p>
         )}
 
-        {confidence > 0 && (
+        {fitScore !== null && fitScore !== undefined && (
           <div className="mt-6">
             <div className="mb-2 flex items-center justify-between text-xs">
-              <span className="font-medium text-[var(--text-muted)]">Model confidence</span>
-              <span className="font-semibold text-[var(--text-primary)]">{confidence.toFixed(0)}%</span>
+              <span className="font-medium text-[var(--text-muted)]">Relative holdout score</span>
+              <span className="font-semibold text-[var(--text-primary)]">{Number(fitScore).toFixed(1)}%</span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-[var(--border-subtle)]">
               <div
                 className="h-full rounded-full bg-[var(--gradient-primary)]"
-                style={{ width: `${Math.min(Math.max(confidence, 0), 100)}%` }}
+                style={{ width: `${Math.min(Math.max(Number(fitScore) || 0, 0), 100)}%` }}
               />
             </div>
           </div>

@@ -11,6 +11,7 @@ import PageHeader from "../../components/layout/PageHeader";
 import Breadcrumbs from "../../components/layout/Breadcrumbs";
 import { usePredictions } from "../../hooks/usePredictions";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { formatMonthYear } from "../../utils/formatDate";
 
 export default function Predictions() {
   const {
@@ -20,7 +21,12 @@ export default function Predictions() {
     setHorizon,
     forecast,
     chartSeries,
-    confidence,
+    fitScore,
+    fitScoreMethod,
+    evaluation,
+    anomalyModel,
+    anomalyGranularity,
+    anomalyMinimumMonths,
     trend,
     insufficientData,
     generating,
@@ -30,6 +36,7 @@ export default function Predictions() {
     loading,
     error,
     refresh,
+    anomalies,
     anomalyCount,
   } = usePredictions();
   const [selected, setSelected] = useState(null);
@@ -72,18 +79,18 @@ export default function Predictions() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           label="Next month estimate"
-          value={formatCurrency(forecast[0]?.amount || 0)}
+          value={forecast.length ? formatCurrency(forecast[0].amount) : "—"}
           detail={forecast[0]?.label || "Forecast unavailable"}
           icon={TrendingDown}
           tone="warning"
         />
         <MetricCard
-          label="Forecast confidence"
-          value={`${confidence}%`}
+          label="Relative holdout score"
+          value={fitScore === null ? "Not evaluated" : `${Number(fitScore).toFixed(1)}%`}
           detail={
-            insufficientData
-              ? "Limited recorded history"
-              : "Based on historical fit"
+            fitScore === null
+              ? "Insufficient holdout history"
+              : "Normalized rolling holdout MAE"
           }
           icon={BrainCircuit}
           tone="info"
@@ -138,12 +145,48 @@ export default function Predictions() {
           </select>
         </div>
         <p className="ml-auto max-w-sm text-xs leading-5 text-[var(--text-muted)]">
-          {anomalyCount > 0
-            ? `The latest model run detected ${anomalyCount} unusual expense${anomalyCount === 1 ? "" : "s"}. `
+          {anomalyModel || "Anomaly detection"} checks{" "}
+          {anomalyGranularity === "positive_monthly_expense_totals"
+            ? "positive monthly expense totals"
+            : "monthly expense totals"},
+          not individual transactions.
+          {anomalyMinimumMonths
+            ? ` At least ${anomalyMinimumMonths} active months are needed to report outliers.`
             : ""}
-          Forecasts use the server ML pipeline and your recorded monthly expense totals; they are estimates, not financial advice.
+          Forecasts use your recorded monthly expense totals and are estimates, not financial advice.
         </p>
       </div>
+
+      {anomalyCount > 0 && (
+        <section
+          aria-label="Unusual monthly expense totals"
+          className="rounded-3xl border border-[var(--warning)]/25 bg-[var(--warning-soft)] p-4 shadow-[var(--shadow-sm)] sm:p-5"
+        >
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-semibold tracking-tight text-[var(--text-primary)]">
+              Unusual monthly totals
+            </h2>
+            <span className="text-xs text-[var(--text-muted)]">
+              {anomalyModel || "Anomaly detector"} · {anomalyCount} month{anomalyCount === 1 ? "" : "s"} flagged
+            </span>
+          </div>
+          <ul className="mt-3 divide-y divide-[var(--border-subtle)]">
+            {anomalies.map((anomaly) => (
+              <li
+                key={`${anomaly.date}-${anomaly.amount}`}
+                className="flex items-center justify-between gap-4 py-2 text-sm"
+              >
+                <span className="text-[var(--text-secondary)]">
+                  {formatMonthYear(anomaly.date)}
+                </span>
+                <span className="font-semibold text-[var(--text-primary)] numeric">
+                  {formatCurrency(anomaly.amount)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <PredictionChart
         data={chartSeries}
@@ -151,7 +194,13 @@ export default function Predictions() {
         description="Historical monthly expenses and projected future spending."
       />
 
-      <ModelInfo confidence={confidence} dataPoints={history.length} />
+      <ModelInfo
+        modelName={latest?.model}
+        fitScore={fitScore}
+        fitScoreMethod={fitScoreMethod}
+        evaluation={evaluation}
+        dataPoints={latest?.metadata?.dataPoints ?? null}
+      />
 
       <PredictionHistory predictions={history} onSelect={setSelected} />
 
@@ -173,7 +222,9 @@ export default function Predictions() {
               {formatCurrency(selected.predictedAmount)}
             </p>
             <p className="mt-2 text-sm text-[var(--text-muted)]">
-              Confidence: {selected.confidence || 0}%
+              Relative holdout score: {selected.metadata?.fitScore == null
+                ? "Not evaluated"
+                : `${Number(selected.metadata.fitScore).toFixed(1)}%`}
             </p>
             <button
               type="button"

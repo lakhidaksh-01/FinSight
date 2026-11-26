@@ -1,11 +1,10 @@
 ﻿import { useEffect, useState } from "react";
-import { AlertTriangle, Plus, WalletCards } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Button from "../../components/common/Button";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import ErrorState from "../../components/common/ErrorState";
-import MetricCard from "../../components/common/MetricCard";
 import Modal from "../../components/common/Modal";
 import BudgetCard from "../../components/budgets/BudgetCard";
 import BudgetForm from "../../components/budgets/BudgetForm";
@@ -13,7 +12,6 @@ import BudgetSummary from "../../components/budgets/BudgetSummary";
 import PageHeader from "../../components/layout/PageHeader";
 import Breadcrumbs from "../../components/layout/Breadcrumbs";
 import { useBudgets } from "../../hooks/useBudgets";
-import { formatCurrency } from "../../utils/formatCurrency";
 
 const monthValue = (period) =>
   period.month && period.year
@@ -34,7 +32,6 @@ export default function Budgets() {
     createBudget,
     updateBudget,
     deleteBudget,
-    summary,
   } = useBudgets();
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
@@ -126,23 +123,6 @@ export default function Budgets() {
       </div>
 
       {!error && <BudgetSummary budgets={budgets} />}
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <MetricCard
-          label="Budgeted"
-          value={formatCurrency(summary.totalBudgeted)}
-          detail={`${summary.count} category limits`}
-          icon={WalletCards}
-          tone="info"
-        />
-        <MetricCard
-          label="Needs attention"
-          value={summary.warnings.length + summary.exceeded.length}
-          detail={`${summary.exceeded.length} over limit · ${summary.warnings.length} nearing limit`}
-          icon={AlertTriangle}
-          tone={summary.exceeded.length ? "danger" : "warning"}
-        />
-      </div>
 
       {error && <ErrorState message={error} onRetry={refresh} />}
       {!error && loading && (

@@ -22,7 +22,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { goalService } from "../services/goalService";
-import { sumBy } from "../utils/calculations";
+import { calculateGoalTotals } from "../utils/calculations";
 import { daysUntil, parseDate } from "../utils/formatDate";
 
 const AT_RISK_WINDOW_DAYS = 30;
@@ -136,18 +136,14 @@ export function useGoals() {
   );
 
   const summary = useMemo(() => {
-    const totalTarget = sumBy(goals, "targetAmount");
-    const totalSaved = sumBy(goals, "currentAmount");
+    const goalTotals = calculateGoalTotals(goals);
 
     return {
       count: goals.length,
-      totalTarget,
-      totalSaved,
-      totalRemaining: Math.max(totalTarget - totalSaved, 0),
-      progress:
-        totalTarget > 0
-          ? Number(((totalSaved / totalTarget) * 100).toFixed(1))
-          : 0,
+      totalTarget: goalTotals.target,
+      totalSaved: goalTotals.saved,
+      totalRemaining: goalTotals.remaining,
+      progress: goalTotals.progress,
       completed: goals.filter((goal) => goal.isCompleted),
       atRisk: goals.filter(
         (goal) => goal.status === "at-risk" || goal.status === "overdue"

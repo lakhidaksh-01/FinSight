@@ -62,6 +62,15 @@ describe("Password Reset API", () => {
     });
   });
 
+  test("uses a single TTL index for reset-request expiration", () => {
+    const expiresAtIndexes = PasswordReset.schema
+      .indexes()
+      .filter(([fields]) => fields.expiresAt === 1);
+
+    expect(expiresAtIndexes).toHaveLength(1);
+    expect(expiresAtIndexes[0][1].expireAfterSeconds).toBe(0);
+  });
+
   test(
     "should send password reset OTP",
     async () => {

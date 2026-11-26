@@ -1,6 +1,11 @@
 import Income from "../models/Income.js";
 import ApiError from "../utils/apiError.js";
-import { getPagination, buildPaginatedResult } from "../utils/pagination.js";
+import { getPagination } from "../utils/pagination.js";
+import {
+  buildTransactionFilter,
+  getPaginatedTransactions,
+  getTransactionSort,
+} from "../utils/transactionQuery.js";
 
 // Add income
 export const createIncome = async (userId, data) => {
@@ -23,48 +28,17 @@ export const createIncome = async (userId, data) => {
 
 // Get income
 export const getIncome = async (userId, query) => {
-  const filter = { user: userId };
-
-  if (query.category) {
-    filter.category = query.category;
-  }
-
-  if (query.startDate || query.endDate) {
-    filter.date = {};
-
-    if (query.startDate) {
-      filter.date.$gte = new Date(query.startDate);
-    }
-
-    if (query.endDate) {
-      filter.date.$lte = new Date(query.endDate);
-    }
-  }
-
-  if (query.search) {
-    const escaped = String(query.search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    filter.$or = [
-      { description: { $regex: escaped, $options: "i" } },
-      { category: { $regex: escaped, $options: "i" } }
-    ];
-  }
+  const filter = buildTransactionFilter(userId, query);
 
   const paginated = query.page !== undefined || query.limit !== undefined;
   const pagination = getPagination(query);
-
-  const [incomes, total] = await Promise.all([
-    Income.find(filter)
-      .sort({ date: -1, _id: -1 })
-      .skip(paginated ? pagination.skip : 0)
-      .limit(paginated ? pagination.limit : 0),
-    paginated ? Income.countDocuments(filter) : Promise.resolve(0)
-  ]);
+  const sort = getTransactionSort(query.sort);
 
   if (paginated) {
-    return buildPaginatedResult(incomes, total, pagination);
+    return getPaginatedTransactions(Income, filter, pagination, sort);
   }
 
-  return incomes;
+  return Income.find(filter).sort(sort);
 };
 
 // Get one income
@@ -106,7 +80,7 @@ export const updateIncome = async (
     },
     updates,
     {
-      new: true,
+      returnDocument: "after",
       runValidators: true
     }
   );

@@ -5,6 +5,7 @@
   AlertTriangle,
 } from "lucide-react";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { calculateBudgetTotals } from "../../utils/calculations";
 
 function SummaryItem({ icon: Icon, label, value, description, iconClassName }) {
   return (
@@ -22,11 +23,16 @@ function SummaryItem({ icon: Icon, label, value, description, iconClassName }) {
 }
 
 function BudgetSummary({ budgets = [] }) {
-  const totalBudget = budgets.reduce((total, budget) => total + Number(budget.amount || 0), 0);
-  const totalSpent = budgets.reduce((total, budget) => total + Number(budget.spent || 0), 0);
+  const { totalBudgeted: totalBudget, totalSpent, totalRemaining: remaining } =
+    calculateBudgetTotals(budgets);
   const activeBudgets = budgets.length;
   const exceededBudgets = budgets.filter((budget) => Number(budget.amount || 0) > 0 && Number(budget.spent || 0) > Number(budget.amount || 0)).length;
-  const remaining = Math.max(totalBudget - totalSpent, 0);
+  const nearingBudgets = budgets.filter((budget) => {
+    const amount = Number(budget.amount) || 0;
+    const percentage = amount > 0 ? (Number(budget.spent) || 0) / amount * 100 : 0;
+
+    return percentage >= 80 && percentage <= 100;
+  }).length;
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -43,9 +49,9 @@ function BudgetSummary({ budgets = [] }) {
         <SummaryItem
           icon={AlertTriangle}
           label="Attention Needed"
-          value={exceededBudgets}
-          description={activeBudgets ? `of ${activeBudgets} active budgets` : "No active budgets"}
-          iconClassName={exceededBudgets > 0 ? "bg-[var(--danger-soft)] text-[var(--danger)] border-[var(--danger)]/20" : "bg-[var(--surface-raised)] text-[var(--text-muted)] border-[var(--border-subtle)]"}
+          value={exceededBudgets + nearingBudgets}
+          description={activeBudgets ? `${exceededBudgets} over limit · ${nearingBudgets} nearing limit` : "No active budgets"}
+          iconClassName={exceededBudgets > 0 ? "bg-[var(--danger-soft)] text-[var(--danger)] border-[var(--danger)]/20" : nearingBudgets > 0 ? "bg-[var(--warning-soft)] text-[var(--warning)] border-[var(--warning)]/20" : "bg-[var(--surface-raised)] text-[var(--text-muted)] border-[var(--border-subtle)]"}
         />
       </div>
     </div>

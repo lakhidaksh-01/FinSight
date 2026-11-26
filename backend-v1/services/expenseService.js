@@ -1,6 +1,11 @@
 import Expense from "../models/Expense.js";
 import ApiError from "../utils/apiError.js";
-import { getPagination, buildPaginatedResult } from "../utils/pagination.js";
+import { getPagination } from "../utils/pagination.js";
+import {
+  buildTransactionFilter,
+  getPaginatedTransactions,
+  getTransactionSort,
+} from "../utils/transactionQuery.js";
 
 // Add expense
 export const createExpense = async (userId, data) => {
@@ -23,49 +28,17 @@ export const createExpense = async (userId, data) => {
 
 // Get expenses
 export const getExpenses = async (userId, query) => {
-  const filter = { user: userId };
-
-  if (query.category) {
-    filter.category = query.category;
-  }
-
-  if (query.startDate || query.endDate) {
-    filter.date = {};
-
-    if (query.startDate) {
-      filter.date.$gte = new Date(query.startDate);
-    }
-
-    if (query.endDate) {
-      filter.date.$lte = new Date(query.endDate);
-    }
-  }
-
-  if (query.search) {
-    const escaped = String(query.search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    filter.$or = [
-      { description: { $regex: escaped, $options: "i" } },
-      { category: { $regex: escaped, $options: "i" } },
-      { notes: { $regex: escaped, $options: "i" } }
-    ];
-  }
+  const filter = buildTransactionFilter(userId, query, { includeNotes: true });
 
   const paginated = query.page !== undefined || query.limit !== undefined;
   const pagination = getPagination(query);
-
-  const [expenses, total] = await Promise.all([
-    Expense.find(filter)
-      .sort({ date: -1, _id: -1 })
-      .skip(paginated ? pagination.skip : 0)
-      .limit(paginated ? pagination.limit : 0),
-    paginated ? Expense.countDocuments(filter) : Promise.resolve(0)
-  ]);
+  const sort = getTransactionSort(query.sort);
 
   if (paginated) {
-    return buildPaginatedResult(expenses, total, pagination);
+    return getPaginatedTransactions(Expense, filter, pagination, sort);
   }
 
-  return expenses;
+  return Expense.find(filter).sort(sort);
 };
 
 // Get one expense
@@ -104,7 +77,7 @@ export const updateExpense = async (
     },
     updates,
     {
-      new: true,
+      returnDocument: "after",
       runValidators: true
     }
   );

@@ -48,6 +48,50 @@ describe("Expense API", () => {
     expect(Array.isArray(response.body.data)).toBe(true);
   });
 
+  test("should search, sort, paginate, and summarize the full matching expense set", async () => {
+    const now = new Date().toISOString();
+    for (const amount of [100, 200, 300]) {
+      await request(app)
+        .post("/api/expenses")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          amount,
+          category: "Summary test",
+          description: "Paginated summary record",
+          date: now
+        });
+    }
+
+    const response = await request(app)
+      .get("/api/expenses?search=summary&sort=highest&page=1&limit=1")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.data.items).toHaveLength(1);
+    expect(response.body.data.items[0].amount).toBe(300);
+    expect(response.body.data.pagination).toMatchObject({
+      page: 1,
+      limit: 1,
+      total: 3,
+      pages: 3
+    });
+    expect(response.body.data.summary).toMatchObject({
+      total: 600,
+      count: 3,
+      average: 200,
+      thisMonth: 600,
+      categories: [{ category: "Summary test", amount: 600, count: 3 }]
+    });
+    expect(response.body.data.summary.largest.amount).toBe(300);
+
+    const numericSearch = await request(app)
+      .get("/api/expenses?search=200&page=1&limit=20")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(numericSearch.body.data.pagination.total).toBe(1);
+    expect(numericSearch.body.data.items[0].amount).toBe(200);
+  });
+
   test("should get one expense", async () => {
     const response = await request(app)
       .get(`/api/expenses/${expenseId}`)

@@ -1,37 +1,40 @@
+import numpy as np
+import pandas as pd
 from sklearn.ensemble import IsolationForest
+
+MIN_ACTIVE_MONTHS = 5
 
 
 def detect_anomalies(
     df,
-    target_column="amount",
-    contamination=0.05
+    target_column="amount"
 ):
     """
-    Detect unusual transaction amounts.
+    Detect unusual positive monthly expense totals.
     """
 
-    if df.empty:
-        return df.copy()
+    result = df.copy()
+    result["anomaly"] = False
 
-    if target_column not in df.columns:
-        return df.copy()
-
-    if len(df) < 5:
-        result = df.copy()
-        result["anomaly"] = False
+    if result.empty or target_column not in result.columns:
         return result
 
-    result = df.copy()
+    amounts = pd.to_numeric(result[target_column], errors="coerce")
+    valid_amounts = np.isfinite(amounts) & (amounts > 0)
+    candidate_indices = result.index[valid_amounts]
+
+    if len(candidate_indices) < MIN_ACTIVE_MONTHS:
+        return result
 
     model = IsolationForest(
-        contamination=contamination,
+        contamination="auto",
         random_state=42
     )
 
     predictions = model.fit_predict(
-        result[[target_column]]
+        amounts.loc[candidate_indices].to_frame(name=target_column)
     )
 
-    result["anomaly"] = predictions == -1
+    result.loc[candidate_indices, "anomaly"] = predictions == -1
 
     return result

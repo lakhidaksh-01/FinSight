@@ -1,5 +1,6 @@
 import Expense from "../models/Expense.js";
 import Income from "../models/Income.js";
+import { parseQueryDate } from "../utils/transactionQuery.js";
 
 // Get dashboard analytics
 export const getDashboardAnalytics = async (
@@ -12,11 +13,11 @@ export const getDashboardAnalytics = async (
     filter.date = {};
 
     if (query.startDate) {
-      filter.date.$gte = new Date(query.startDate);
+      filter.date.$gte = parseQueryDate(query.startDate);
     }
 
     if (query.endDate) {
-      filter.date.$lte = new Date(query.endDate);
+      filter.date.$lte = parseQueryDate(query.endDate, { endOfDay: true });
     }
   }
 
@@ -60,11 +61,11 @@ export const getSpendingAnalytics = async (
     filter.date = {};
 
     if (query.startDate) {
-      filter.date.$gte = new Date(query.startDate);
+      filter.date.$gte = parseQueryDate(query.startDate);
     }
 
     if (query.endDate) {
-      filter.date.$lte = new Date(query.endDate);
+      filter.date.$lte = parseQueryDate(query.endDate, { endOfDay: true });
     }
   }
 

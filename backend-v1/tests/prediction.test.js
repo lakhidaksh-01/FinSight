@@ -52,6 +52,39 @@ describe("Prediction API", () => {
     expect(Array.isArray(response.body.data.forecasts)).toBe(true);
     expect(response.body.data.forecasts.length).toBe(3);
     expect(response.body.data.forecasts[0]).toHaveProperty("_id");
+    expect(response.body.data.prediction.linearRegression).toEqual(
+      response.body.data.forecasts.map((forecast) => forecast.predictedAmount)
+    );
+    expect(typeof response.body.data.prediction.baseline).toBe("number");
+    expect(typeof response.body.data.prediction.movingAverage).toBe("number");
+    expect(response.body.data.forecasts[0]).toMatchObject({
+      model: "scikit-learn LinearRegression",
+      metadata: {
+        dataPoints: 6,
+        fitScoreMethod: expect.stringContaining("holdout MAE"),
+        anomalyMethod: "isolation_forest",
+        anomalyModel: "scikit-learn IsolationForest",
+        anomalyGranularity: "positive_monthly_expense_totals",
+        anomalyMinimumMonths: 5,
+        evaluation: expect.objectContaining({
+          method: "rolling_origin_one_step",
+          samples: expect.any(Number)
+        })
+      }
+    });
+    expect(response.body.data.forecasts[0]).not.toHaveProperty("confidence");
+    expect(response.body.data.forecasts[0].metadata.runId).toBeTruthy();
+    expect(response.body.data.fitScore).toBeGreaterThanOrEqual(0);
+    expect(response.body.data.evaluation.samples).toBeGreaterThan(0);
+    expect(response.body.data.evaluation.method).toBe("rolling_origin_one_step");
+    expect(response.body.data.anomalyCount).toBe(
+      response.body.data.anomalies.length
+    );
+    expect(response.body.data.anomalyMethod).toBe("isolation_forest");
+    expect(response.body.data.models).toEqual({
+      forecast: "scikit-learn LinearRegression",
+      anomaly: "scikit-learn IsolationForest"
+    });
 
     predictionId = response.body.data.forecasts[0]._id;
   });

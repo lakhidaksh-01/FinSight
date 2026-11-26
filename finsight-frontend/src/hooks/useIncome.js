@@ -12,22 +12,11 @@
  * it "source"; incomeService performs that rename, so this hook only ever
  * works with `source`.
  *
- * Same division of labour as useExpenses: the source and the date range go to
- * GET /api/income, text search and sorting stay local.
+ * The API applies source, date range, search and sorting before pagination.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { incomeService } from "../services/incomeService";
-import {
-  groupByCategory,
-  searchRecords,
-  sortRecords,
-  sumAmount,
-  topCategory,
-} from "../utils/calculations";
-import { isSameMonth } from "../utils/formatDate";
-
-const SEARCH_FIELDS = ["description", "source", "amount"];
 
 const DEFAULT_FILTERS = {
   search: "",
@@ -43,6 +32,7 @@ export function useIncome(initialFilters = {}) {
     ...initialFilters,
   });
   const [records, setRecords] = useState([]);
+  const [aggregateSummary, setAggregateSummary] = useState(null);
   const [pagination, setPagination] = useState(null);
   const [page, setPage] = useState(initialFilters.page || 1);
   const [loading, setLoading] = useState(true);
@@ -54,6 +44,7 @@ export function useIncome(initialFilters = {}) {
   const queryKey = JSON.stringify({
     source: filters.source,
     search: filters.search,
+    sort: filters.sort,
     dateFrom: filters.dateFrom,
     dateTo: filters.dateTo,
     page,
@@ -77,6 +68,7 @@ export function useIncome(initialFilters = {}) {
 
         setRecords(result.items);
         setPagination(result.pagination);
+        setAggregateSummary(result.summary);
       })
       .catch((loadError) => {
         if (!active || requestId.current !== currentRequest) {
@@ -84,6 +76,8 @@ export function useIncome(initialFilters = {}) {
         }
 
         setRecords([]);
+        setPagination(null);
+        setAggregateSummary(null);
         setError(
           loadError?.message || "Unable to load your income right now."
         );
@@ -103,34 +97,16 @@ export function useIncome(initialFilters = {}) {
     setPage(1);
   }, [filters.source, filters.search, filters.dateFrom, filters.dateTo]);
 
-  const incomes = useMemo(
-    () =>
-      sortRecords(
-        searchRecords(records, filters.search, SEARCH_FIELDS),
-        filters.sort
-      ),
-    [records, filters.search, filters.sort]
-  );
-
-  const summary = useMemo(() => {
-    const total = sumAmount(incomes);
-    const largest = incomes.reduce(
-      (best, item) => (!best || Number(item.amount) > Number(best.amount) ? item : best),
-      null
-    );
-
-    return {
-      total,
-      count: incomes.length,
-      average: incomes.length ? total / incomes.length : 0,
-      largest,
-      thisMonth: sumAmount(
-        records.filter((item) => isSameMonth(item.date || item.createdAt))
-      ),
-      sources: groupByCategory(incomes),
-      topSource: topCategory(incomes),
-    };
-  }, [incomes, records]);
+  const incomes = records;
+  const summary = aggregateSummary || {
+    total: 0,
+    count: 0,
+    average: 0,
+    largest: null,
+    thisMonth: 0,
+    categories: [],
+    topCategory: null,
+  };
 
   const setFilter = useCallback((key, value) => {
     setFilters((previous) => ({ ...previous, [key]: value }));

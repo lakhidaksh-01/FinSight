@@ -57,6 +57,23 @@ describe("Analytics API", () => {
     expect(
       response.body.data
     ).toHaveProperty("savingsRate");
+    expect(response.body.data).toMatchObject({
+      totalIncome: 50000,
+      totalExpenses: 15000,
+      savings: 35000
+    });
+
+    const now = new Date();
+    const dateOnly = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const dateRange = await request(app)
+      .get(`/api/analytics/dashboard?startDate=${dateOnly}&endDate=${dateOnly}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(dateRange.statusCode).toBe(200);
+    expect(dateRange.body.data).toMatchObject({
+      totalIncome: 50000,
+      totalExpenses: 15000
+    });
   });
 
   test("should return spending analytics", async () => {

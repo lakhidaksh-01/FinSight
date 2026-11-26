@@ -6,7 +6,7 @@
  *
  *   const {
  *     historyMonths, setHistoryMonths, horizon, setHorizon,
- *     historicalSeries, forecast, chartSeries, confidence, trend,
+ *     historicalSeries, forecast, chartSeries, fitScore, trend,
  *     insufficientData, generating, saved, generate, history, loading, error,
  *   } = usePredictions();
  *
@@ -28,6 +28,7 @@ import {
   buildForecastChartSeries,
   buildMonthlySeries,
 } from "../utils/calculations";
+import { restoreLatestForecastRun } from "../utils/predictions";
 
 const DEFAULT_HISTORY_MONTHS = 6;
 const HISTORY_CHOICES = [3, 6, 12];
@@ -61,24 +62,28 @@ export function usePredictions(options = {}) {
     Promise.all([
       expenseService.getExpenses({}),
       incomeService.getIncomes({}),
-      predictionService
-        .getPredictions({})
-        /*
-         * Prediction history is an extra: an empty or failing endpoint must not
-         * stop the forecast from being calculated.
-         */
-        .catch(() => []),
-      predictionService.getLatestPrediction().catch(() => null),
+      predictionService.getPredictions({ type: "expense_forecast" }),
     ])
-      .then(([expenses, incomes, predictions, latestPrediction]) => {
+      .then(([expenses, incomes, predictions]) => {
         if (!active) {
           return;
         }
+
+        const { latest: latestPrediction, run: latestRun } =
+          restoreLatestForecastRun(predictions);
 
         setExpenseRecords(expenses);
         setIncomeRecords(incomes);
         setHistory(predictions);
         setLatest(latestPrediction);
+        setServerForecast(latestRun);
+        const savedAnomalies = Array.isArray(
+          latestPrediction?.metadata?.anomalies
+        )
+          ? latestPrediction.metadata.anomalies
+          : [];
+        setAnomalies(savedAnomalies);
+        setAnomalyCount(savedAnomalies.length);
       })
       .catch((loadError) => {
         if (!active) {
@@ -110,7 +115,6 @@ export function usePredictions(options = {}) {
       key: record.period,
       label: record.period,
       amount: record.predictedAmount,
-      confidence: record.confidence,
       metadata: record.metadata || {},
     })),
     [serverForecast]
@@ -133,8 +137,8 @@ export function usePredictions(options = {}) {
 
       const records = result.forecasts;
       setServerForecast(records);
-      setAnomalies(result.anomalies || []);
-      setAnomalyCount(result.anomalyCount || 0);
+      setAnomalies(result.anomalies);
+      setAnomalyCount(result.anomalies.length);
       setSaved(records);
       setHistory((previous) => [...records, ...previous]);
       setLatest(records[records.length - 1] || null);
@@ -161,9 +165,18 @@ export function usePredictions(options = {}) {
     historicalSeries,
     forecast,
     chartSeries,
-    confidence: serverForecast[0]?.confidence || 0,
+    fitScore: serverForecast[0]?.metadata?.fitScore ?? null,
+    fitScoreMethod: serverForecast[0]?.metadata?.fitScoreMethod ?? null,
+    evaluation: serverForecast[0]?.metadata?.evaluation ?? null,
+    anomalyModel: serverForecast[0]?.metadata?.anomalyModel ?? null,
+    anomalyGranularity:
+      serverForecast[0]?.metadata?.anomalyGranularity ?? null,
+    anomalyMinimumMonths:
+      serverForecast[0]?.metadata?.anomalyMinimumMonths ?? null,
     trend: serverForecast[0]?.metadata?.trend || "stable",
-    insufficientData: historyMonths < MIN_MONTHS_FOR_FORECAST,
+    insufficientData:
+      historicalSeries.filter((point) => point.amount > 0).length <
+      MIN_MONTHS_FOR_FORECAST,
     generating,
     saved,
     generate,

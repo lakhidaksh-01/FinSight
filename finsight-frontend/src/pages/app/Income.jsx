@@ -10,7 +10,6 @@ import Modal from "../../components/common/Modal";
 import IncomeFilters from "../../components/income/IncomeFilters";
 import IncomeForm from "../../components/income/IncomeForm";
 import IncomeTable from "../../components/income/IncomeTable";
-import IncomeSummary from "../../components/income/IncomeSummary";
 import PageHeader from "../../components/layout/PageHeader";
 import Breadcrumbs from "../../components/layout/Breadcrumbs";
 import { useIncome } from "../../hooks/useIncome";
@@ -97,7 +96,7 @@ export default function Income() {
         <MetricCard
           label="This month"
           value={formatCurrency(summary.thisMonth)}
-          detail="All income recorded this month"
+          detail="Matching income this month"
           icon={ArrowUpRight}
           tone="info"
         />
@@ -105,14 +104,13 @@ export default function Income() {
           label="Average record"
           value={formatCurrency(summary.average)}
           detail={
-            summary.topSource ? `Top source: ${summary.topSource.category}` : "No source data yet"
+            summary.topCategory ? `Top source: ${summary.topCategory.category}` : "No source data yet"
           }
           icon={Wallet}
           tone="warning"
         />
       </div>
 
-      <IncomeSummary incomes={incomes} previousTotal={0} />
       <IncomeFilters filters={filters} onChange={setFilters} onReset={resetFilters} />
 
       {error && <ErrorState message={error} onRetry={refresh} />}

@@ -2,6 +2,7 @@ import Prediction from "../models/Prediction.js";
 import ApiError from "../utils/apiError.js";
 import Expense from "../models/Expense.js";
 import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getPagination, buildPaginatedResult } from "../utils/pagination.js";
@@ -51,8 +52,7 @@ const withPythonCapacity = (action) => {
   });
 };
 
-const buildMonthlyExpenseData = (expenses, months) => {
-  const now = new Date();
+const buildMonthlyExpenseData = (expenses, months, now = new Date()) => {
   const totals = new Map();
 
   expenses.forEach((expense) => {
@@ -72,13 +72,57 @@ const buildMonthlyExpenseData = (expenses, months) => {
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 
     data.push({
-      date: date.toISOString(),
+      date: `${key}-01`,
       amount: Number((totals.get(key) || 0).toFixed(2)),
       category: "Expense"
     });
   }
 
   return data;
+};
+
+const isNonNegativeNumber = (value) =>
+  Number.isFinite(value) && value >= 0;
+
+const isValidPythonResult = (result, horizon) => {
+  const predictions = result?.prediction?.linearRegression;
+  const anomalies = result?.anomalies;
+  const evaluation = result?.evaluation;
+
+  return (
+    result?.success === true &&
+    Array.isArray(predictions) &&
+    predictions.length === horizon &&
+    predictions.every(isNonNegativeNumber) &&
+    isNonNegativeNumber(result.prediction.baseline) &&
+    isNonNegativeNumber(result.prediction.movingAverage) &&
+    Number.isInteger(result.dataPoints) &&
+    result.dataPoints > 0 &&
+    ["up", "down", "stable"].includes(result.trend) &&
+    (result.fitScore === null ||
+      (isNonNegativeNumber(result.fitScore) && result.fitScore <= 100)) &&
+    typeof result.fitScoreMethod === "string" &&
+    result.fitScoreMethod.length > 0 &&
+    result.models?.forecast === "scikit-learn LinearRegression" &&
+    result.models?.anomaly === "scikit-learn IsolationForest" &&
+    anomalies?.method === "isolation_forest" &&
+    anomalies?.granularity === "positive_monthly_expense_totals" &&
+    anomalies.minimumActiveMonths === 5 &&
+    Number.isInteger(anomalies.count) &&
+    Array.isArray(anomalies.records) &&
+    anomalies.count === anomalies.records.length &&
+    anomalies.records.every((record) =>
+      typeof record?.date === "string" &&
+      Number.isFinite(Date.parse(record.date)) &&
+      isNonNegativeNumber(record.amount) &&
+      typeof record.category === "string"
+    ) &&
+    Number.isInteger(evaluation?.samples) &&
+    evaluation.samples >= 0 &&
+    evaluation.method === "rolling_origin_one_step" &&
+    (evaluation.mae === null || isNonNegativeNumber(evaluation.mae)) &&
+    (evaluation.rmse === null || isNonNegativeNumber(evaluation.rmse))
+  );
 };
 
 const runPythonPrediction = async (data, horizon) => {
@@ -141,6 +185,14 @@ const runPythonPrediction = async (data, horizon) => {
           return;
         }
 
+        if (!isValidPythonResult(response, horizon)) {
+          reject(new ApiError(
+            503,
+            "The forecasting service returned incomplete or invalid model results"
+          ));
+          return;
+        }
+
         resolve(response);
       } catch (error) {
         reject(new ApiError(
@@ -189,9 +241,12 @@ export const generatePredictions = async (
 ) => {
   const normalizedHistoryMonths = Math.max(3, Math.min(12, Number(historyMonths) || 6));
   const normalizedHorizon = Math.max(1, Math.min(12, Number(horizon) || 3));
-  const startDate = new Date();
-  startDate.setMonth(startDate.getMonth() - (normalizedHistoryMonths - 1));
-  startDate.setDate(1);
+  const now = new Date();
+  const startDate = new Date(
+    now.getFullYear(),
+    now.getMonth() - (normalizedHistoryMonths - 1),
+    1
+  );
   startDate.setHours(0, 0, 0, 0);
 
   const expenses = await Expense.find({
@@ -199,7 +254,11 @@ export const generatePredictions = async (
     date: { $gte: startDate }
   }).select("date amount").lean();
 
-  const monthlyData = buildMonthlyExpenseData(expenses, normalizedHistoryMonths);
+  const monthlyData = buildMonthlyExpenseData(
+    expenses,
+    normalizedHistoryMonths,
+    now
+  );
   const populatedMonths = monthlyData.filter((item) => item.amount > 0).length;
 
   if (populatedMonths < 3) {
@@ -212,7 +271,7 @@ export const generatePredictions = async (
   const result = await runPythonPrediction(monthlyData, normalizedHorizon);
 
   const forecastValues = result.prediction.linearRegression;
-  const now = new Date();
+  const runId = randomUUID();
   const created = [];
 
   for (let index = 0; index < forecastValues.length; index += 1) {
@@ -226,12 +285,18 @@ export const generatePredictions = async (
       predictionType: "expense_forecast",
       predictedAmount: forecastValues[index],
       period,
-      confidence: result.confidence,
-      model: "linear-regression-python",
+      model: result.models.forecast,
       metadata: {
+        runId,
+        anomalyMethod: result.anomalies.method,
+        anomalyModel: result.models.anomaly,
+        anomalyGranularity: result.anomalies.granularity,
+        anomalyMinimumMonths: result.anomalies.minimumActiveMonths,
         baseline: result.prediction.baseline,
         movingAverage: result.prediction.movingAverage,
         trend: result.trend,
+        fitScore: result.fitScore,
+        fitScoreMethod: result.fitScoreMethod,
         historyMonths: normalizedHistoryMonths,
         horizon: normalizedHorizon,
         dataPoints: result.dataPoints,
@@ -244,10 +309,17 @@ export const generatePredictions = async (
 
   return {
     forecasts: created,
+    prediction: result.prediction,
     anomalies: result.anomalies.records,
     anomalyCount: result.anomalies.count,
+    anomalyMethod: result.anomalies.method,
+    anomalyModel: result.models.anomaly,
+    anomalyGranularity: result.anomalies.granularity,
+    anomalyMinimumMonths: result.anomalies.minimumActiveMonths,
     dataPoints: result.dataPoints,
-    confidence: result.confidence,
+    fitScore: result.fitScore,
+    fitScoreMethod: result.fitScoreMethod,
+    models: result.models,
     trend: result.trend,
     evaluation: result.evaluation || null
   };

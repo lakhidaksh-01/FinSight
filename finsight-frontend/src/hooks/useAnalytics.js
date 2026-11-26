@@ -16,9 +16,8 @@
  *   utils/calculations.js and utils/insights.js. Changing the period therefore
  *   re-computes instantly instead of hitting the API again.
  *
- * The API totals are still fetched and used as the source of truth for the
- * headline numbers, so what the server reports and what the charts add up to
- * stay comparable.
+ * The dashboard aggregate is the source of truth for period totals. Raw
+ * records remain the source for monthly series and category distributions.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -28,10 +27,10 @@ import { budgetService } from "../services/budgetService";
 import { expenseService } from "../services/expenseService";
 import { goalService } from "../services/goalService";
 import { incomeService } from "../services/incomeService";
-import { predictionService } from "../services/predictionService";
 import {
   buildCombinedSeries,
   calculateFinancialHealth,
+  getComparableMonthRanges,
   filterByRange,
   getRollingRange,
   groupByCategory,
@@ -48,12 +47,6 @@ import {
   summarizeInsights,
 } from "../utils/insights";
 
-const previousMonthReference = () => {
-  const now = new Date();
-
-  return new Date(now.getFullYear(), now.getMonth() - 1, 15);
-};
-
 export function useAnalytics({ months: initialMonths } = {}) {
   const [months, setMonths] = useState(
     Number(initialMonths) || DEFAULT_ANALYTICS_MONTHS
@@ -64,9 +57,6 @@ export function useAnalytics({ months: initialMonths } = {}) {
     budgets: [],
     goals: [],
     apiSummary: null,
-    apiSpending: null,
-    apiSavings: null,
-    latestPrediction: null,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -96,16 +86,13 @@ export function useAnalytics({ months: initialMonths } = {}) {
          * still computed locally, so it must not break the page.
          */
         .catch(() => null),
-      analyticsService.getSpending(requestFilters).catch(() => null),
-      analyticsService.getSavings(requestFilters).catch(() => null),
-      predictionService.getLatestPrediction().catch(() => null),
     ])
-      .then(([expenses, incomes, budgets, goals, apiSummary, apiSpending, apiSavings, latestPrediction]) => {
+      .then(([expenses, incomes, budgets, goals, apiSummary]) => {
         if (!active) {
           return;
         }
 
-        setData({ expenses, incomes, budgets, goals, apiSummary, apiSpending, apiSavings, latestPrediction });
+        setData({ expenses, incomes, budgets, goals, apiSummary });
       })
       .catch((loadError) => {
         if (!active) {
@@ -140,7 +127,7 @@ export function useAnalytics({ months: initialMonths } = {}) {
   );
 
   const currentRange = useMemo(() => getRollingRange(1), []);
-  const previousRange = useMemo(() => getRollingRange(1, previousMonthReference()), []);
+  const comparisonRanges = useMemo(() => getComparableMonthRanges(), []);
 
   const budgets = useMemo(
     () => withBudgetProgress(
@@ -159,8 +146,14 @@ export function useAnalytics({ months: initialMonths } = {}) {
     [data.budgets, data.expenses, currentRange]
   );
 
-  const totalExpenses = useMemo(() => sumAmount(expenses), [expenses]);
-  const totalIncome = useMemo(() => sumAmount(incomes), [incomes]);
+  const rawExpenseTotal = useMemo(() => sumAmount(expenses), [expenses]);
+  const rawIncomeTotal = useMemo(() => sumAmount(incomes), [incomes]);
+  const totalExpenses = data.apiSummary && Number.isFinite(Number(data.apiSummary.totalExpenses))
+    ? Number(data.apiSummary.totalExpenses)
+    : rawExpenseTotal;
+  const totalIncome = data.apiSummary && Number.isFinite(Number(data.apiSummary.totalIncome))
+    ? Number(data.apiSummary.totalIncome)
+    : rawIncomeTotal;
   /*
    * One row per month with income, expenses and savings: TrendChart,
    * IncomeExpenseChart and SavingsChart all consume this.
@@ -176,27 +169,39 @@ export function useAnalytics({ months: initialMonths } = {}) {
     return groups.map((group) => ({
       ...group,
       percentage:
-        totalExpenses > 0
-          ? Number(((group.amount / totalExpenses) * 100).toFixed(1))
+        rawExpenseTotal > 0
+          ? Number(((group.amount / rawExpenseTotal) * 100).toFixed(1))
           : 0,
     }));
-  }, [expenses, totalExpenses]);
+  }, [expenses, rawExpenseTotal]);
 
   /*
    * Month-over-month movement, the basis of both the comparison cards and the
    * "spending is climbing" insight.
    */
   const currentMonthExpenses = useMemo(
-    () => filterByRange(data.expenses, currentRange.startDate, currentRange.endDate),
-    [data.expenses, currentRange]
+    () => filterByRange(
+      data.expenses,
+      comparisonRanges.current.startDate,
+      comparisonRanges.current.endDate
+    ),
+    [data.expenses, comparisonRanges]
   );
   const previousMonthExpenses = useMemo(
-    () => filterByRange(data.expenses, previousRange.startDate, previousRange.endDate),
-    [data.expenses, previousRange]
+    () => filterByRange(
+      data.expenses,
+      comparisonRanges.previous.startDate,
+      comparisonRanges.previous.endDate
+    ),
+    [data.expenses, comparisonRanges]
   );
   const currentMonthIncomes = useMemo(
-    () => filterByRange(data.incomes, currentRange.startDate, currentRange.endDate),
-    [data.incomes, currentRange]
+    () => filterByRange(
+      data.incomes,
+      comparisonRanges.current.startDate,
+      comparisonRanges.current.endDate
+    ),
+    [data.incomes, comparisonRanges]
   );
 
   const comparison = useMemo(() => {
@@ -211,7 +216,11 @@ export function useAnalytics({ months: initialMonths } = {}) {
       expenseChange: percentChange(currentExpenseTotal, previousExpenseTotal),
       incomeChange: percentChange(
         currentIncomeTotal,
-        sumAmount(filterByRange(data.incomes, previousRange.startDate, previousRange.endDate))
+        sumAmount(filterByRange(
+          data.incomes,
+          comparisonRanges.previous.startDate,
+          comparisonRanges.previous.endDate
+        ))
       ),
       monthLabel: series[series.length - 1]?.label || "",
       previousMonthLabel: series[series.length - 2]?.label || "",
@@ -221,7 +230,7 @@ export function useAnalytics({ months: initialMonths } = {}) {
     previousMonthExpenses,
     currentMonthIncomes,
     data.incomes,
-    previousRange,
+    comparisonRanges,
     series,
   ]);
 
@@ -239,13 +248,6 @@ export function useAnalytics({ months: initialMonths } = {}) {
         months > 0 ? Number((totalIncome / months).toFixed(2)) : totalIncome,
       largestCategory: categoryBreakdown[0] || null,
       transactionCount: expenses.length + incomes.length,
-      /*
-       * The totals reported by GET /api/analytics for the same window, kept
-       * alongside so a mismatch is visible instead of silent.
-       */
-      apiSummary: data.apiSummary,
-      apiSpending: data.apiSpending,
-      apiSavings: data.apiSavings,
     };
   }, [
     totalIncome,
@@ -254,52 +256,34 @@ export function useAnalytics({ months: initialMonths } = {}) {
     categoryBreakdown,
     expenses.length,
     incomes.length,
-    data.apiSummary,
-    data.apiSpending,
-    data.apiSavings,
   ]);
 
+  const healthBudgets = useMemo(
+    () => withBudgetProgress(
+      data.budgets.filter((budget) => {
+        const key = Number(budget.year) * 12 + Number(budget.month);
+        const startKey = range.startDate.getFullYear() * 12 + range.startDate.getMonth() + 1;
+        const endKey = range.endDate.getFullYear() * 12 + range.endDate.getMonth() + 1;
+
+        return key >= startKey && key <= endKey;
+      }),
+      data.expenses
+    ),
+    [data.budgets, data.expenses, range]
+  );
+
   const anomalies = useMemo(() => {
-    const local = detectExpenseAnomalies(expenses, incomes);
-    const serverRecords = data.latestPrediction?.metadata?.anomalies || [];
-    const server = serverRecords
-      .filter((record) => expenses.some((expense) =>
-        expense.date &&
-        String(expense.date).slice(0, 10) === String(record.date || "").slice(0, 10) &&
-        Number(expense.amount) === Number(record.amount)
-      ))
-      .map((record, index) => ({
-      id: `server-anomaly-${record.date || index}-${record.amount}`,
-      severity: "medium",
-      title: record.category ? `${record.category} anomaly` : "Unusual expense",
-      message: `The anomaly model detected an unusual expense of ${Number(record.amount || 0).toLocaleString("en-IN")}.`,
-      amount: Number(record.amount || 0),
-      category: record.category || "Expense",
-      date: record.date,
-    }));
-
-    const seen = new Set();
-
-    return [...server, ...local].filter((anomaly) => {
-      const key = `${anomaly.date || ""}-${Number(anomaly.amount || 0)}`;
-
-      if (seen.has(key)) {
-        return false;
-      }
-
-      seen.add(key);
-      return true;
-    });
-  }, [expenses, incomes, data.latestPrediction]);
+    return detectExpenseAnomalies(expenses, incomes);
+  }, [expenses, incomes]);
 
   const risk = useMemo(
     () =>
       assessFinancialRisk({
         income: totalIncome,
         expenses: totalExpenses,
-        budgets,
+        budgets: healthBudgets,
       }),
-    [totalIncome, totalExpenses, budgets]
+    [totalIncome, totalExpenses, healthBudgets]
   );
 
   const health = useMemo(
@@ -307,11 +291,11 @@ export function useAnalytics({ months: initialMonths } = {}) {
       calculateFinancialHealth({
         income: totalIncome,
         expenses: totalExpenses,
-        budgets,
+        budgets: healthBudgets,
         goals: data.goals,
         transactionCount: summary.transactionCount,
       }),
-    [totalIncome, totalExpenses, budgets, data.goals, summary.transactionCount]
+    [totalIncome, totalExpenses, healthBudgets, data.goals, summary.transactionCount]
   );
 
   const insights = useMemo(

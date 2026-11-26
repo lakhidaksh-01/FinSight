@@ -79,6 +79,7 @@ export const incomeService = {
             : undefined,
       ...toRangeParams(filters),
       search: filters.search,
+      sort: filters.sort,
       page: filters.page,
       limit: filters.limit,
     });
@@ -89,6 +90,18 @@ export const incomeService = {
     return {
       items: (Array.isArray(data) ? data : data?.items || []).map(fromApiRecord),
       pagination: data?.pagination || null,
+      summary: data?.summary
+        ? {
+            ...data.summary,
+            total: Number(data.summary.total) || 0,
+            count: Number(data.summary.count) || 0,
+            average: Number(data.summary.average) || 0,
+            thisMonth: Number(data.summary.thisMonth) || 0,
+            largest: fromApiRecord(data.summary.largest),
+            categories: data.summary.categories || [],
+            topCategory: data.summary.categories?.[0] || null,
+          }
+        : null,
     };
   },
 

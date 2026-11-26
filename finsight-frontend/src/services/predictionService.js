@@ -4,7 +4,7 @@
  * Talks to /api/predictions.
  *
  * Endpoints (backend-v1/routes/predictionRoutes.js):
- *   POST /api/predictions   { predictionType, predictedAmount, period, confidence, model, metadata }
+ *   POST /api/predictions   { predictionType, predictedAmount, period, model, metadata }
  *   GET  /api/predictions   history, newest first
  *   GET  /api/predictions/latest   404 when nothing has been stored yet
  *
@@ -24,13 +24,13 @@ const fromApiRecord = (record) => {
     return null;
   }
 
+  const normalizedRecord = { ...record };
+  delete normalizedRecord.confidence;
+
   return {
-    ...record,
+    ...normalizedRecord,
     id: record._id || record.id,
     predictedAmount: Number(record.predictedAmount) || 0,
-    confidence: Number(record.confidence) <= 1
-      ? Math.round((Number(record.confidence) || 0) * 100)
-      : Number(record.confidence) || 0,
     metadata: record.metadata || {},
   };
 };
@@ -47,6 +47,13 @@ export const predictionService = {
     return {
       ...data,
       forecasts: (data.forecasts || []).map(fromApiRecord),
+      anomalies: data.anomalies,
+      anomalyCount: data.anomalies.length,
+      anomalyModel: data.anomalyModel,
+      anomalyGranularity: data.anomalyGranularity,
+      anomalyMinimumMonths: data.anomalyMinimumMonths,
+      fitScoreMethod: data.fitScoreMethod,
+      models: data.models,
     };
   },
 

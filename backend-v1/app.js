@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import mongoose from "mongoose";
 
 import authRoutes from "./routes/authRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
@@ -10,6 +11,7 @@ import budgetRoutes from "./routes/budgetRoutes.js";
 import goalRoutes from "./routes/goalRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import predictionRoutes from "./routes/predictionRoutes.js";
+import ApiError from "./utils/apiError.js";
 import { errorMiddleware } from "./middleware/errorMiddleware.js";
 
 const app = express();
@@ -30,7 +32,7 @@ app.use(cors({
       return;
     }
 
-    callback(new Error("Origin not allowed by CORS"));
+    callback(new ApiError(403, "Origin not allowed by CORS"));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
@@ -50,9 +52,12 @@ app.get("/", (req, res) => {
 });
 
 app.get("/health", (req, res) => {
-  res.status(200).json({
-    success: true,
-    status: "healthy"
+  const databaseConnected = mongoose.connection.readyState === 1;
+
+  res.status(databaseConnected ? 200 : 503).json({
+    success: databaseConnected,
+    status: databaseConnected ? "healthy" : "unhealthy",
+    database: databaseConnected ? "connected" : "unavailable"
   });
 });
 

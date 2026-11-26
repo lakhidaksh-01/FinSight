@@ -1,5 +1,6 @@
 import json
 import sys
+import pandas as pd
 
 from preprocessing.prepareData import prepare_data
 from preprocessing.featureEngineering import engineer_features
@@ -11,14 +12,59 @@ from forecasting.baseline import (
 
 from forecasting.linearRegression import (
     train_linear_regression,
-    predict_next,
+    predict_next_period,
     predict_sequence
 )
 
 from anomaly.isolationForest import (
-    detect_anomalies
+    detect_anomalies,
+    MIN_ACTIVE_MONTHS
 )
 from forecasting.evaluate import evaluate_model
+
+
+def evaluate_forecast(data, features):
+    if len(data) < 4:
+        return {
+            "mae": None,
+            "rmse": None,
+            "samples": 0,
+            "method": "rolling_origin_one_step"
+        }, None
+
+    holdout_count = min(3, max(1, len(data) // 4))
+    first_holdout = len(data) - holdout_count
+    training = data.iloc[:first_holdout].copy()
+    actual_values = []
+    predicted_values = []
+
+    for index in range(first_holdout, len(data)):
+        engineered_training = engineer_features(training)
+        model = train_linear_regression(engineered_training, features)
+        predicted_values.append(
+            predict_next_period(model, engineered_training, features)
+        )
+        actual_values.append(float(data["amount"].iloc[index]))
+        training = pd.concat(
+            [training, data.iloc[[index]]],
+            ignore_index=True
+        )
+
+    evaluation = evaluate_model(actual_values, predicted_values)
+    evaluation["samples"] = len(actual_values)
+    evaluation["method"] = "rolling_origin_one_step"
+    mean_actual = sum(actual_values) / len(actual_values)
+    mae = sum(
+        abs(actual - predicted)
+        for actual, predicted in zip(actual_values, predicted_values)
+    ) / len(actual_values)
+    fit_score = (
+        round(max(0.0, min(100.0, 100.0 * (1 - mae / mean_actual))), 1)
+        if mean_actual > 0
+        else None
+    )
+
+    return evaluation, fit_score
 
 
 def run_prediction(data, horizon=3):
@@ -74,7 +120,6 @@ def run_prediction(data, horizon=3):
         horizon
     )
 
-    confidence = 45.0
     trend = "stable"
     if len(engineered_data) >= 3:
         mean_amount = float(engineered_data["amount"].mean())
@@ -83,34 +128,7 @@ def run_prediction(data, horizon=3):
             slope = slope_values[-1] - slope_values[-2]
             trend = "up" if slope > mean_amount * 0.05 else "down" if slope < -mean_amount * 0.05 else "stable"
 
-        actual = engineered_data["amount"].iloc[-1]
-        holdout_features = features
-        training = engineer_features(prepared_data.iloc[:-1])
-        holdout_model = train_linear_regression(training, holdout_features)
-        predicted = predict_next(holdout_model, training, holdout_features)
-        error = abs(float(actual) - float(predicted))
-        relative_error = error / max(float(actual), 1.0)
-        confidence = max(45.0, min(96.0, 96.0 - relative_error * 51.0))
-
-    evaluation = {"mae": 0.0, "rmse": 0.0}
-    if len(engineered_data) >= 4:
-        holdout_count = min(3, max(1, len(engineered_data) // 4))
-        training_data = engineered_data.iloc[:-holdout_count]
-        holdout_data = engineered_data.iloc[-holdout_count:]
-
-        evaluation_model = train_linear_regression(
-            training_data,
-            features
-        )
-
-        predicted_values = [
-            predict_next(evaluation_model, training_data, features)
-        ] * len(holdout_data)
-
-        evaluation = evaluate_model(
-            holdout_data["amount"].tolist(),
-            predicted_values
-        )
+    evaluation, fit_score = evaluate_forecast(prepared_data, features)
 
     anomaly_data = detect_anomalies(
         prepared_data
@@ -143,9 +161,17 @@ def run_prediction(data, horizon=3):
         },
         "anomalies": {
             "count": anomaly_count,
-            "records": anomaly_records
+            "records": anomaly_records,
+            "method": "isolation_forest",
+            "granularity": "positive_monthly_expense_totals",
+            "minimumActiveMonths": MIN_ACTIVE_MONTHS
         },
-        "confidence": round(confidence, 2),
+        "models": {
+            "forecast": "scikit-learn LinearRegression",
+            "anomaly": "scikit-learn IsolationForest"
+        },
+        "fitScore": fit_score,
+        "fitScoreMethod": "100 * (1 - holdout MAE / mean holdout actual), clipped to 0-100",
         "trend": trend,
         "evaluation": evaluation,
         "dataPoints": len(prepared_data)

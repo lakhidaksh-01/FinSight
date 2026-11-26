@@ -10,7 +10,6 @@ import Modal from "../../components/common/Modal";
 import ExpenseFilters from "../../components/expenses/ExpenseFilters";
 import ExpenseForm from "../../components/expenses/ExpenseForm";
 import ExpenseTable from "../../components/expenses/ExpenseTable";
-import ExpenseSummary from "../../components/expenses/ExpenseSummary";
 import PageHeader from "../../components/layout/PageHeader";
 import Breadcrumbs from "../../components/layout/Breadcrumbs";
 import { useExpenses } from "../../hooks/useExpenses";
@@ -123,7 +122,7 @@ export default function Expenses() {
         <MetricCard
           label="This month"
           value={formatCurrency(summary.thisMonth)}
-          detail="All expenses recorded this month"
+          detail="Matching expenses this month"
           icon={Wallet}
           tone="primary"
         />
@@ -140,7 +139,6 @@ export default function Expenses() {
         />
       </div>
 
-      <ExpenseSummary expenses={expenses} previousTotal={0} />
       <ExpenseFilters filters={filters} onChange={setFilters} onReset={resetFilters} />
 
       {error && <ErrorState message={error} onRetry={refresh} />}

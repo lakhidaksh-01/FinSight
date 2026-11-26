@@ -24,7 +24,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BUDGET_THRESHOLDS } from "../constants/app";
 import { budgetService } from "../services/budgetService";
 import { expenseService } from "../services/expenseService";
-import { sumAmount, withBudgetProgress } from "../utils/calculations";
+import {
+  calculateBudgetTotals,
+  withBudgetProgress,
+} from "../utils/calculations";
 
 export function useBudgets(initialPeriod = {}) {
   const [period, setPeriodState] = useState({
@@ -93,8 +96,7 @@ export function useBudgets(initialPeriod = {}) {
   );
 
   const summary = useMemo(() => {
-    const totalBudgeted = sumAmount(budgets.map((item) => ({ amount: item.amount })));
-    const totalSpent = sumAmount(budgets.map((item) => ({ amount: item.spent })));
+    const totals = calculateBudgetTotals(budgets);
 
     const warnings = budgets.filter(
       (item) =>
@@ -106,13 +108,7 @@ export function useBudgets(initialPeriod = {}) {
     );
 
     return {
-      totalBudgeted,
-      totalSpent,
-      totalRemaining: Math.max(totalBudgeted - totalSpent, 0),
-      utilization:
-        totalBudgeted > 0
-          ? Number(((totalSpent / totalBudgeted) * 100).toFixed(1))
-          : 0,
+      ...totals,
       count: budgets.length,
       warnings,
       exceeded,

@@ -147,7 +147,7 @@ export const updateProfile = async (
     userId,
     updates,
     {
-      new: true,
+      returnDocument: "after",
       runValidators: true
     }
   ).select("-password");

@@ -1,9 +1,18 @@
 import nodemailer from "nodemailer";
-console.log("SMTP_HOST:", process.env.SMTP_HOST);
-console.log("SMTP_PORT:", process.env.SMTP_PORT);
+const smtpPort = Number(process.env.SMTP_PORT);
+const emailConfigured = Boolean(
+  process.env.SMTP_HOST &&
+  Number.isInteger(smtpPort) &&
+  smtpPort > 0 &&
+  smtpPort <= 65535 &&
+  process.env.SMTP_USER &&
+  process.env.SMTP_PASSWORD &&
+  process.env.SMTP_FROM
+);
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
+  port: smtpPort,
   secure: process.env.SMTP_PORT === "465",
   auth: {
     user: process.env.SMTP_USER,
@@ -12,6 +21,10 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendPasswordResetOtp = async (email, otp) => {
+  if (!emailConfigured) {
+    throw new Error("Password reset email delivery is not configured");
+  }
+
   await transporter.sendMail({
     from: `"FinSight" <${process.env.SMTP_FROM}>`,
     to: email,

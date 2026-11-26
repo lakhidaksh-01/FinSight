@@ -3,25 +3,23 @@
  * --------
  * Local intelligence layer.
  *
- * The API exposes raw transaction, budget, goal and prediction data but has no
- * /insights, /anomaly or /risk endpoint (backend riskService exists without a
- * route and the Python models are not wired up). Instead of inventing
- * endpoints, FinSight derives observations here from data the user actually
- * owns, using rules that stay explainable on screen.
+ * Financial insights and transaction-level anomaly flags are derived here
+ * from the user's records using explicit, explainable rules. The Python model
+ * forecast remains on the Predictions page and analyzes monthly totals.
  */
 
-import { RISK_THRESHOLDS } from "../constants/app";
-import { getCategoryLabel } from "../constants/categories";
+import { RISK_THRESHOLDS } from "../constants/app.js";
+import { getCategoryLabel } from "../constants/categories.js";
 import {
   average,
   buildMonthlySeries,
+  calculateGoalTotals,
   groupByCategory,
   percentChange,
   savingsRateOf,
   sumAmount,
-  sumBy,
-} from "./calculations";
-import { daysUntil, parseDate } from "./formatDate";
+} from "./calculations.js";
+import { daysUntil, parseDate } from "./formatDate.js";
 
 const HIGH_EXPENSE_MULTIPLIER = 2.5;
 const MIN_MONTHLY_RECORDS = 4;
@@ -144,16 +142,14 @@ export const assessFinancialRisk = ({
       (Number(budget?.spent) || 0) > Number(budget?.amount)
   ).length;
 
-  const overspent = sumBy(
-    budgets.filter(
-      (budget) =>
-        Number(budget?.amount) > 0 &&
-        (Number(budget?.spent) || 0) > Number(budget?.amount)
-    ),
-    "spent"
-  );
+  const overage = budgets.reduce((total, budget) => {
+    const limit = Number(budget?.amount) || 0;
+    const spent = Number(budget?.spent) || 0;
 
-  const breachPressure = exceeded >= 2 || overspent > expenseTotal * 0.15;
+    return limit > 0 ? total + Math.max(spent - limit, 0) : total;
+  }, 0);
+
+  const breachPressure = exceeded >= 2 || overage > expenseTotal * 0.15;
 
   if (incomeTotal <= 0) {
     if (expenseTotal > 0) {
@@ -179,7 +175,7 @@ export const assessFinancialRisk = ({
     return {
       riskLevel: "high",
       savingsRate: Number(rate.toFixed(1)),
-      amount: savings < 0 ? Math.abs(savings) : exceeded > 0 ? overspent : expenseTotal,
+      amount: savings < 0 ? Math.abs(savings) : exceeded > 0 ? overage : expenseTotal,
       message:
         savings < 0
           ? "Expenses are currently larger than income. Closing the gap should be the first priority."
@@ -300,7 +296,7 @@ export const buildInsights = ({
   if (leading && leading.percentage >= 30) {
     insights.push({
       id: "category-concentration",
-      type: "ai",
+      type: "info",
       title: `${getCategoryLabel(leading.category)} leads your spending`,
       message: `${getCategoryLabel(leading.category)} accounts for ${leading.percentage}% of spending (${leading.count} transaction${leading.count === 1 ? "" : "s"}). Capping this one category has the biggest effect on your total.`,
       category: "category",
@@ -408,11 +404,11 @@ export const buildInsights = ({
   /*
    * Goal pacing
    */
-  const goalTarget = sumBy(goals, "targetAmount");
-  const goalSaved = sumBy(goals, "currentAmount");
+  const { target: goalTarget, progress: goalProgress } =
+    calculateGoalTotals(goals);
 
   if (goalTarget > 0) {
-    const progress = Math.min((goalSaved / goalTarget) * 100, 100);
+    const progress = goalProgress;
 
     insights.push({
       id: "goal-progress",
@@ -477,7 +473,7 @@ export const buildInsights = ({
   /*
    * Recorded risk
    */
-  if (risk && risk.riskLevel !== "low") {
+  if (risk && risk.riskLevel !== "low" && !breached.length) {
     insights.push({
       id: "risk-summary",
       type: "risk",

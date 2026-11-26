@@ -14,8 +14,8 @@
  *
  * Notes:
  * - expense notes are persisted by the Expense schema
- * - search and sorting are applied by the hook because the API only filters
- *   on category and date range
+ * - filtered summaries, search and sorting are handled by the API before
+ *   pagination so the list and its KPIs share the same result set
  */
 
 import api, { buildQuery, toApiDate, toRangeParams, unwrap } from "./api";
@@ -88,6 +88,7 @@ export const expenseService = {
           : undefined,
       ...toRangeParams(filters),
       search: filters.search,
+      sort: filters.sort,
       page: filters.page,
       limit: filters.limit,
     });
@@ -98,6 +99,18 @@ export const expenseService = {
     return {
       items: (Array.isArray(data) ? data : data?.items || []).map(fromApiRecord),
       pagination: data?.pagination || null,
+      summary: data?.summary
+        ? {
+            ...data.summary,
+            total: Number(data.summary.total) || 0,
+            count: Number(data.summary.count) || 0,
+            average: Number(data.summary.average) || 0,
+            thisMonth: Number(data.summary.thisMonth) || 0,
+            largest: fromApiRecord(data.summary.largest),
+            categories: data.summary.categories || [],
+            topCategory: data.summary.categories?.[0] || null,
+          }
+        : null,
     };
   },
 
